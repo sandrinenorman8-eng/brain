@@ -1,0 +1,47 @@
+================================================================================
+  PROBLÈME IDENTIFIÉ - START.bat ÉCRASE LES MODIFICATIONS
+  Date: 2025-10-24 13:30
+================================================================================
+
+PROBLÈME CRITIQUE:
+------------------
+START.bat copie les fichiers depuis src/backend/ vers la racine!
+Cela ÉCRASE toutes les modifications faites dans app.py à la racine!
+
+Ligne 27-29 de START.bat:
+```
+if exist "src\backend\app.py" (
+    copy /Y "src\backend\*.py" . >nul 2>&1
+    ...
+```
+
+CONSÉQUENCE:
+------------
+- Je modifie deuxieme_cerveau/app.py
+- START.bat copie src/backend/app.py (ancien code) par-dessus
+- Mes corrections sont perdues!
+
+SOLUTION:
+---------
+✅ 1. Copier category_path_resolver.py dans src/backend/
+✅ 2. Modifier src/backend/app.py (le fichier SOURCE)
+✅ 3. START.bat copiera automatiquement la bonne version
+
+FICHIERS À MODIFIER:
+--------------------
+- src/backend/app.py (SOURCE - 8 fonctions à corriger)
+- src/backend/category_path_resolver.py (copié)
+
+PROCHAINE ÉTAPE:
+----------------
+Corriger TOUTES les fonctions dans src/backend/app.py:
+1. save_note() ✅
+2. list_files()
+3. _get_all_files_cached()
+4. read_file()
+5. open_folder()
+6. erase_category()
+7. upload_file()
+8. extract_file_creation_hour()
+
+================================================================================

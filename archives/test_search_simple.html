@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Recherche Simple</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .search-box:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        .status {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .file-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .file-name {
+            font-weight: bold;
+            color: #333;
+        }
+        .file-category {
+            color: #666;
+            font-size: 14px;
+        }
+        .search-excerpt {
+            margin-top: 10px;
+            padding: 8px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            font-size: 12px;
+        }
+        .search-excerpt mark {
+            background: #ffeb3b;
+            padding: 1px 2px;
+            border-radius: 2px;
+        }
+        .debug {
+            background: #e9ecef;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test de Recherche Simple</h1>
+        
+        <input type="text" class="search-box" placeholder="Tapez votre recherche ici..." id="searchInput">
+        
+        <div id="status" class="status info">
+            💡 Tapez au moins 2 caractères pour rechercher
+        </div>
+        
+        <div id="debug" class="debug">
+            Debug: En attente de recherche...
+        </div>
+        
+        <div id="results">
+            <!-- Les résultats apparaîtront ici -->
+        </div>
+    </div>
+
+    <script>
+        // Données de test simplifiées
+        const testData = {
+            "scénario": [
+                { name: "scénario_2025-09-19.txt", date: "2025-09-19" },
+                { name: "scénario_2025-09-17.txt", date: "2025-09-17" }
+            ],
+            "todo": [
+                { name: "todo_2025-09-17.txt", date: "2025-09-17" },
+                { name: "todo_2025-09-16.txt", date: "2025-09-16" }
+            ],
+            "test": [
+                { name: "test_2025-09-19.txt", date: "2025-09-19" },
+                { name: "test_2025-09-17.txt", date: "2025-09-17" }
+            ]
+        };
+
+        let searchTimeout;
+        let searchServerAvailable = false;
+
+        // Vérifier le serveur de recherche
+        async function checkSearchServer() {
+            try {
+                const response = await fetch('http://localhost:3008/status');
+                if (response.ok) {
+                    searchServerAvailable = true;
+                    updateStatus('🟢 Serveur de recherche actif', 'success');
+                    return true;
+                }
+            } catch (error) {
+                searchServerAvailable = false;
+                updateStatus('🔴 Serveur de recherche inactif - Recherche locale uniquement', 'error');
+            }
+            return false;
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        function updateDebug(message) {
+            const debugDiv = document.getElementById('debug');
+            debugDiv.textContent = `Debug: ${message}`;
+        }
+
+        function displayResults(results, searchTerm) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<p>Aucun résultat trouvé.</p>';
+                return;
+            }
+
+            let html = `<h3>📊 ${results.length} résultat(s) trouvé(s)</h3>`;
+            
+            results.forEach(result => {
+                html += `
+                    <div class="file-item">
+                        <div class="file-name">${result.name}</div>
+                        <div class="file-category">📁 ${result.category} - 📅 ${result.date}</div>
+                        ${result.excerpts ? result.excerpts.map(excerpt => `
+                            <div class="search-excerpt">
+                                <strong>Ligne ${excerpt.line_number}:</strong><br>
+                                ${highlightSearchTerm(excerpt.text, searchTerm)}
+                            </div>
+                        `).join('') : ''}
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        function highlightSearchTerm(text, searchTerm) {
+            if (!text || !searchTerm) return text;
+            const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<mark>$1</mark>');
+        }
+
+        // Recherche locale dans les noms de fichiers
+        function searchLocal(searchTerm) {
+            updateDebug(`Recherche locale pour: "${searchTerm}"`);
+            const results = [];
+            
+            Object.keys(testData).forEach(category => {
+                testData[category].forEach(file => {
+                    if (file.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        category.toLowerCase().includes(searchTerm.toLowerCase())) {
+                        results.push({
+                            name: file.name,
+                            category: category,
+                            date: file.date
+                        });
+                    }
+                });
+            });
+            
+            updateDebug(`Recherche locale terminée: ${results.length} résultats`);
+            return results;
+        }
+
+        // Recherche de contenu via serveur
+        async function searchContent(searchTerm) {
+            if (!searchServerAvailable) return [];
+            
+            try {
+                updateDebug(`Recherche de contenu pour: "${searchTerm}"`);
+                
+                const response = await fetch('http://localhost:3008/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ term: searchTerm })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                updateDebug(`Recherche de contenu terminée: ${data.results ? data.results.length : 0} résultats`);
+                
+                return data.results || [];
+            } catch (error) {
+                updateDebug(`Erreur recherche de contenu: ${error.message}`);
+                searchServerAvailable = false;
+                updateStatus('🔴 Erreur serveur - Recherche locale uniquement', 'error');
+                return [];
+            }
+        }
+
+        // Fonction principale de recherche
+        async function performSearch(searchTerm) {
+            if (!searchTerm) {
+                document.getElementById('results').innerHTML = '';
+                updateDebug('Recherche vide');
+                return;
+            }
+
+            updateDebug(`Début de recherche pour: "${searchTerm}"`);
+            
+            // Recherche locale
+            const localResults = searchLocal(searchTerm);
+            
+            // Recherche de contenu (si disponible)
+            let contentResults = [];
+            if (searchTerm.length >= 2) {
+                contentResults = await searchContent(searchTerm);
+            }
+            
+            // Combiner les résultats
+            const allResults = [...localResults];
+            
+            // Ajouter les résultats de contenu
+            contentResults.forEach(contentResult => {
+                const existingIndex = allResults.findIndex(r => 
+                    r.name === contentResult.filename && r.category === contentResult.category
+                );
+                
+                if (existingIndex >= 0) {
+                    // Ajouter les extraits au résultat existant
+                    allResults[existingIndex].excerpts = contentResult.excerpts;
+                } else {
+                    // Ajouter un nouveau résultat
+                    allResults.push({
+                        name: contentResult.filename,
+                        category: contentResult.category,
+                        date: contentResult.date,
+                        excerpts: contentResult.excerpts
+                    });
+                }
+            });
+            
+            displayResults(allResults, searchTerm);
+            updateStatus(`✅ ${allResults.length} résultat(s) trouvé(s)`, 'success');
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.trim();
+            
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                performSearch(searchTerm);
+            }, 300);
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async function() {
+            updateDebug('Initialisation...');
+            await checkSearchServer();
+            updateDebug('Prêt pour la recherche');
+        });
+    </script>
+</body>
+</html>

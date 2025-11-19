@@ -1,0 +1,79 @@
+================================================================================
+  TOUTES LES CORRECTIONS DE MAPPING APPLIQUÉES
+  Date: 2025-10-24 10:15
+================================================================================
+
+PROBLÈME:
+---------
+TOUTES les catégories créaient des fichiers dans le mauvais dossier!
+Exemple: "todo" créait data/todo/ au lieu de data/priorité/todo/
+
+CAUSE:
+------
+6 fonctions dans app.py utilisaient des chemins directs au lieu de get_category_path()
+
+CORRECTIONS APPLIQUÉES:
+-----------------------
+✅ 1. save_note() - Ligne ~45
+   AVANT: os.makedirs(f'data/{category}', exist_ok=True)
+   APRÈS: category_path = get_category_path(category)
+
+✅ 2. list_files() - Ligne ~60
+   AVANT: category_path = f'data/{category}'
+   APRÈS: category_path = get_category_path(category)
+
+✅ 3. _get_all_files_cached() - Ligne ~75
+   AVANT: category_path = f"data/{cat['name']}"
+   APRÈS: category_path = get_category_path(cat['name'])
+
+✅ 4. read_file() - Ligne ~115
+   AVANT: category_dir = os.path.abspath(os.path.join(app_root, 'data', category))
+   APRÈS: category_path_relative = get_category_path(category)
+          category_dir = os.path.abspath(os.path.join(app_root, category_path_relative))
+
+✅ 5. open_folder() - Ligne ~270
+   AVANT: folder_path = os.path.join(os.getcwd(), 'data', category)
+   APRÈS: folder_path = get_absolute_category_path(category)
+
+✅ 6. erase_category() - Ligne ~320
+   AVANT: folder_path = os.path.join(os.getcwd(), 'data', category)
+   APRÈS: folder_path = get_absolute_category_path(category)
+
+✅ 7. upload_file() - Ligne ~370
+   AVANT: category_path = os.path.join('data', category)
+   APRÈS: category_path = get_category_path(category)
+
+✅ 8. extract_file_creation_hour() - Ligne ~475
+   AVANT: filepath = f"data/{category_name}/{filename}"
+   APRÈS: category_path = get_category_path(category_name)
+          filepath = os.path.join(category_path, filename)
+
+================================================================================
+RÉSULTAT:
+================================================================================
+✅ TOUTES les catégories utilisent maintenant le mapping hiérarchique correct!
+
+Exemples de mappings:
+  - "todo" → data/priorité/todo/
+  - "scénario" → data/cinema/scénario/
+  - "memobrik" → data/logiciels/memobrik/
+  - "money brick" → data/buziness/money brick/
+  - "idee philo" → data/livres/idee philo/
+
+================================================================================
+SERVEURS REDÉMARRÉS:
+================================================================================
+✅ Flask: http://localhost:5008 (avec corrections)
+✅ Node.js Search: http://localhost:3008
+
+================================================================================
+TEST À FAIRE:
+================================================================================
+1. Ouvrir http://localhost:5008
+2. Tester plusieurs catégories:
+   - "todo" → doit aller dans data/priorité/todo/
+   - "scénario" → doit aller dans data/cinema/scénario/
+   - "memobrik" → doit aller dans data/logiciels/memobrik/
+3. Vérifier que les fichiers sont créés aux bons endroits
+
+================================================================================

@@ -1,0 +1,85 @@
+================================================================================
+  INSTRUCTIONS POUR TESTER LES CORRECTIONS
+  Date: 2025-10-24 15:45
+================================================================================
+
+✅ LE SERVEUR EST CORRIGÉ ET FONCTIONNE!
+-----------------------------------------
+
+Les tests automatiques confirment que le serveur retourne maintenant les bons
+chemins hiérarchiques:
+
+✅ todo → G:\memobrik\deuxieme_cerveau\data\priorité/todo
+✅ memobrik → G:\memobrik\deuxieme_cerveau\data\logiciels/memobrik
+✅ association → G:\memobrik\deuxieme_cerveau\data\buziness/association
+✅ scénario → G:\memobrik\deuxieme_cerveau\data\cinema/scénario
+✅ motivation → G:\memobrik\deuxieme_cerveau\data\livres/motivation
+
+PROBLÈME: CACHE DU NAVIGATEUR
+------------------------------
+Si vous voyez encore l'ancien comportement (ouverture de C:\Users\14000\Documents),
+c'est parce que votre navigateur utilise une version CACHÉE de la page.
+
+SOLUTION: VIDER LE CACHE DU NAVIGATEUR
+---------------------------------------
+
+Option 1 - Rechargement forcé (RECOMMANDÉ):
+   1. Ouvrez http://localhost:5008 dans votre navigateur
+   2. Appuyez sur Ctrl + Shift + R (Windows)
+      ou Ctrl + F5
+      ou Shift + F5
+   3. Cela force le rechargement sans cache
+
+Option 2 - Vider le cache Chrome:
+   1. Appuyez sur Ctrl + Shift + Delete
+   2. Sélectionnez "Images et fichiers en cache"
+   3. Période: "Dernière heure"
+   4. Cliquez sur "Effacer les données"
+   5. Rechargez la page (F5)
+
+Option 3 - Mode navigation privée:
+   1. Ouvrez une fenêtre de navigation privée (Ctrl + Shift + N)
+   2. Allez sur http://localhost:5008
+   3. Testez les boutons "Ouvrir dossier"
+
+Option 4 - Désactiver le cache (pour le développement):
+   1. Ouvrez les DevTools (F12)
+   2. Allez dans l'onglet "Network"
+   3. Cochez "Disable cache"
+   4. Gardez les DevTools ouverts
+   5. Rechargez la page (F5)
+
+VÉRIFICATION QUE ÇA FONCTIONNE:
+-------------------------------
+Après avoir vidé le cache:
+
+1. Cliquez sur le bouton "Ouvrir dossier" pour "todo"
+   → Devrait ouvrir: G:\memobrik\deuxieme_cerveau\data\priorité\todo
+
+2. Cliquez sur le bouton "Ouvrir dossier" pour "memobrik"
+   → Devrait ouvrir: G:\memobrik\deuxieme_cerveau\data\logiciels\memobrik
+
+3. Cliquez sur le bouton "Ouvrir dossier" pour "association"
+   → Devrait ouvrir: G:\memobrik\deuxieme_cerveau\data\buziness\association
+
+Si vous voyez encore C:\Users\14000\Documents, le cache n'est pas vidé!
+
+TESTS AUTOMATIQUES:
+-------------------
+Pour vérifier que le serveur fonctionne correctement:
+
+   python test_open_folder.py
+
+Ce script teste directement les endpoints et confirme que les chemins
+hiérarchiques sont corrects.
+
+SERVEUR EN COURS:
+-----------------
+✅ Flask: http://localhost:5008 (PID: voir gestionnaire de tâches)
+⚠️  Recherche Node.js: port 3008 (à démarrer si nécessaire)
+
+Pour redémarrer proprement:
+   .\STOP.bat
+   .\START.bat
+
+================================================================================

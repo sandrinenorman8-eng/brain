@@ -1,0 +1,19 @@
+        <!-- Folders Section -->
+        <div class="dynamic-section folders-section" id="folders-section" data-section="folders">
+            <div class="section-header">
+                <h2>📂 Dossiers par catégorie</h2>
+                <div class="section-controls">
+                    <button class="control-btn collapse-btn" onclick="toggleSection('folders-section')" title="Réduire/Agrandir">
+                        <span class="collapse-icon">▼</span>
+                    </button>
+                    <button class="control-btn resize-btn" onmousedown="startResize(event, 'folders-section')" title="Redimensionner">
+                        <span>⤡</span>
+                    </button>
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="section-help">Clique sur un bouton pour ouvrir l'emplacement (catégorie) et accéder au dernier fichier.</div>
+                <div id="folder-buttons" class="folder-buttons-grid"></div>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,27 @@
+{
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "reportMissingImports": "warning",
+  "reportMissingTypeStubs": "warning",
+  "reportImportCycles": "error",
+  "reportUnusedImport": "warning",
+  "reportUnusedClass": "warning",
+  "reportUnusedFunction": "warning",
+  "reportUnusedVariable": "warning",
+  "reportDuplicateImport": "warning",
+  "pythonPlatform": "Windows",
+  "venvPath": "C:\\Users\\14000\\AppData\\Roaming\\Python\\Python311\\site-packages",
+  "extraPaths": [
+    "C:\\Users\\14000\\AppData\\Roaming\\Python\\Python311\\site-packages"
+  ],
+  "include": [
+    "."
+  ],
+  "exclude": [
+    "backups",
+    "launch app",
+    "**/__pycache__",
+    "**/.git"
+  ]
+}
