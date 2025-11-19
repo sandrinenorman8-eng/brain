@@ -1,0 +1,5 @@
+[groq]
+api_key = YOUR_GROQ_API_KEY_HERE
+
+# Get your free API key at: https://console.groq.com/keys
+# Copy this file to config.ini and add your actual key
