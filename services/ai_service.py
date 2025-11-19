@@ -11,9 +11,18 @@ import json
 
 class AIService:
     def __init__(self):
-        self.config = self._load_config()
-        self.api_key = self.config.get('DEFAULT', 'api_key')
-        self.model = self.config.get('DEFAULT', 'model', fallback='moonshotai/kimi-k2-instruct-0905')
+        # Priorité aux variables d'environnement (pour Railway/production)
+        self.api_key = os.environ.get('GROQ_API_KEY')
+        
+        # Fallback sur config.ini (pour dev local)
+        if not self.api_key:
+            try:
+                config = self._load_config()
+                self.api_key = config.get('DEFAULT', 'api_key')
+            except:
+                self.api_key = None
+        
+        self.model = os.environ.get('GROQ_MODEL', 'moonshotai/kimi-k2-instruct-0905')
         self.api_url = "https://api.groq.com/openai/v1/chat/completions"
         
     def _load_config(self):
