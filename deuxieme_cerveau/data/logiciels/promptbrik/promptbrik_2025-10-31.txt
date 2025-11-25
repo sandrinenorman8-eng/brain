@@ -1,0 +1,140 @@
+06:52:56: . Non-Verbal Sounds (General Reactions and Vocalizations)
+These insert sounds or alter delivery for realism, like sighs, laughs, or throat clearing.
+
+[laughing] – Inserts laughter; voice laughs naturally.
+[chuckles] – Soft, short laugh.
+[laughs] – Basic laugh.
+[laughs harder] – Intensified laughter.
+[starts laughing] – Begins laughing progressively.
+[wheezing] – Wheezy laugh or breathy sound (e.g., from exertion).
+[giggles] – Light, playful giggling.
+[snorts] – Quick snort of laughter or surprise.
+[sighs] – A sigh (exhale of breath).
+[exhales] – General exhale.
+[exhales sharply] – Sudden, sharp breath out.
+[clears throat] – Throat clearing sound (your specific request; simulates a human "ahem" or cough-like clear).
+[swallows] – Swallowing sound (e.g., nervous gulp).
+[gulps] – Audibly swallowing, often nervously.
+[sniffling] – Sniffing sound, like from a cold or emotion.
+Example from docs:
+"[clears throat] Excuse me, can you repeat that?"
+
+2. Breathing and Respiration Tags (Body States Related to Breath)
+These focus on breathing patterns for more lifelike audio, including heavy breathing or pauses.
+
+[inhales deeply] – Deep inhale before speaking.
+[breathing heavily] – Panting or labored breathing.
+[short of breath] – Sounds out of breath, like after running.
+[wheezing softly] – Soft wheezing, indicating mild breathing difficulty.
+These can combine with others for nuance, e.g., post-exertion speech.
+Example from docs:
+"[breathing heavily] I just ran all the way here. [short of breath] What did you say?"
+
+3. Other Body State and Vocal Effects
+These add subtle physical or emotional states, often tied to breath or throat.
+
+[coughing lightly] – Soft cough.
+[yawning] – Yawn sound.
+[dry mouth] – Voice sounds parched or dry-throated.
+[thirsty] – Throaty, dehydrated tone.
+[restless] – Fidgety or uneasy delivery (may include subtle breaths).
+[jittery] – Nervous, shaky voice with possible irregular breathing.
+[fidgeting] – Sounds like shifting or moving, with breath adjustments.
+Example:
+"[dry throat] Water? [clears throat] Sorry, I haven't spoken in hours."
+
+4. Pauses and Timing (Related to Breathing/Natural Flow)
+These insert breaks that mimic natural breathing or hesitation.
+
+[short pause] – Brief silence (0.5-1 second).
+[long pause] – Extended silence (2+ seconds).
+Can be used after breaths for realism, e.g., to simulate catching breath.
+Example from docs:
+"Hello... [short pause] [inhales deeply] ...how are you?"
+
+5. Emotional/Delivery Directions (Often Tied to Breath or Tone)
+These influence voice modulation, sometimes implying breath changes (e.g., excited = faster breath).
+
+[surprised] – Sudden intake of breath, shocked tone.
+[appalled] – Horrified, with possible sharp exhale.
+[sarcastic] – Ironic tone.
+[curious] – Inquisitive, softer breathing.
+[excited] – Energetic, quicker pace.
+[crying] – Teary, quivering voice with sniffles/breaths.
+[mischievously] – Playful, whispering undertone.
+[whispers] – Soft, breathy whisper (your message had a whispering part).
+Example from docs:
+"[whispers] This is our secret. [clears throat] Now, speak normally."
+
+6. Sound Effects (Environmental or Extreme Vocal)
+Less common for pure expressions but can include breath-like effects.
+
+[gunshot], [applause], [clapping], [explosion] – Not vocal, but for context.
+Avoid overusing; docs recommend for enhancement only.
+Best Practices from ElevenLabs Documentation (Methodological Guidance)
+18:48:30: BOTTLENECK (restriction de flux)
+    ↓
+CONTEXT SWITCHING (interruption cognitivo-attentionnelle)
+    ↓
+MENTAL RESIDUE (résidu cognitif non-dégagé)
+    ↓
+WORKING MEMORY SATURATION (saturation de la mémoire de travail)
+    ↓
+DECISION PARALYSIS (immobilisme décisionnel)
+    ↓
+DECISION FATIGUE (déplétion volitive)
+    ↓
+COGNITIVE LOAD (surcharge cognitive multidimensionnelle)
+    ├─ INTRINSIC LOAD (complexité inhérente)
+    ├─ EXTRANEOUS LOAD (friction exogène)
+    └─ GERMANE LOAD (charge productive utile)
+    ↓
+ANALYSIS PARALYSIS (approfondissement itératif stérile)
+    ↓
+SATISFICING FAILURE (abandon des critères de satisfaction)
+    ↓
+CHOICE OVERLOAD (paradoxe du choix)
+    ↓
+OPPORTUNITY COST EXPLOSION (coûts d'opportunité divergents)
+    ↓
+IMPEDANCE MISMATCH (désalignement système-intention)
+    ↓
+FRICTION ACCUMULATION (multiplication des résistances)
+    ↓
+OVERHEAD BLOAT (inflation des coûts parasites)
+    ↓
+BOILERPLATE PROLIFERATION (répétition bureaucratique exponentielle)
+    ↓
+CODE SMELL EMERGENCE (symptômes de dégénérescence structurelle)
+    ↓
+HOT SPOT CRYSTALLIZATION (cristallisation des zones critiques)
+    ↓
+TIGHT COUPLING (dépendances devenues rigides)
+    ↓
+CASCADING FAILURE INITIATION (amorce de ruptures en chaîne)
+    ↓
+SYSTEM FRAGILITY THRESHOLD (seuil de fragilité critique)
+    ↓
+CASCADE FAILURE PROPAGATION (propagation exponentielle)
+    ↓
+TECHNICAL DEBT CRYSTALLIZATION (dette figée, irrécupérable)
+    ↓
+ENTROPY MAXIMIZATION (désordre systémique maximal)
+    ↓
+SYSTEM COLLAPSE (effondrement total)
+    ↓
+EXTINCTION EVENT (disparition du système)
+19:00:55: Délimiteurs Hiérarchiques (Évite la Fatigue) :
+
+Parenthèses rondes () : Pour sous-notes ou clarifications mineures (ex. : (niveau: EXPERTLEVEL)). Limite à 1-2 niveaux ; au-delà, passe à crochets.
+Crochets [] : Pour sections majeures ou listes actions (ex. : [optimisation,enrich,repare]). Idéal pour objectifs, car visuellement distinct.
+Accolades {} : Pour formats de sortie obligatoires (ex. : {output: JSON avec clés}). Utilisé en 2025 pour agentic workflows (Medium guide).
+Guillemets triples """ ou XML tags < > : Pour blocs texte/input (ex. : """Texte à analyser"""). Recommandé par LangChain pour séparer user input de system policy – évite confusion dans multi-turns.
+Deux-points : : Pour transitions logiques (ex. : Task: Analyse). Pas pour imbrication ; garde-le linéaire.
+Best Practices pour Accentuation (Bacancy Technology, 2025) :
+
+Sépare tout : System Policy || Task || Input. Ex. : Utilise |||, ---, ou lignes vides pour diviser.
+Chain of Thought (CoT) Imbriqué : Pour complexité, guide pas à pas : "Étape 1: [Identifier problème]. Étape 2: (Proposer solution)."
+One-Shot Examples : Ajoute 1 exemple clair pour "démontrer" ta notation. Ex. : "Accentue comme ceci: [IMPORTANT: Action clé]."
+Évite Pitfalls : Pas de sur-imbrication (ton original en a 3+ niveaux → LLM peut ignorer). Pas de majuscules excessives (fatigue parsing). Teste itérativement (LinkedIn post 2025 : "Instruis le modèle à vérifier assumptions d'abord").
+Pour 2025 Models (OpenAI updates) : Les LLMs comme o3/o4-mini intègrent mieux les "system instructions" séparées, donc mets ton rôle en haut comme [SYSTEM: ...].

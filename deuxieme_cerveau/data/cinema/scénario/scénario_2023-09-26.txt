@@ -1,0 +1,9 @@
+Test file for fusion - 2023-09-26
+This is a test file with various date formats:
+- ISO format: 2023-09-26
+- European format: 26/09/2023
+- US format: 09/26/2023
+- Full month: September 26, 2023
+- Abbreviated month: Sep 26, 2023
+
+Created for testing the fusion functionality with proper filename format.

@@ -1,0 +1,15 @@
+13:32:48: VM #BTUPwrUyKlhgjA535
+ID:
+BTUPwrUyKlhgjA535
+Offre
+Shadow PC - Power
+Stockage interne
+512 Go
+Datacenter
+FRDUN02 (Dunkerque, FR)
+Périodicité de l’abonnement
+Par mois
+Statut
+en cours d'utilisation
+Renouvellement d'abonnement
+01/11/2025

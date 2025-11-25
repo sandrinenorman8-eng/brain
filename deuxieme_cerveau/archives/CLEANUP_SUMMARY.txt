@@ -1,0 +1,127 @@
+================================================================================
+  ANALYSE DES FICHIERS - DEUXIEME CERVEAU
+  Date: 2025-10-24
+  Serveurs: Flask (5008) ✓ | Node.js Search (3008) ✓
+================================================================================
+
+FICHIERS ACTIFS DETECTES:
+--------------------------
+✓ app.py (61.4 KB) - Application Flask principale
+✓ category_path_resolver.py - Resolution chemins hierarchiques
+✓ index.html - Interface utilisateur principale
+✓ all_notes_standalone.html - Visualiseur notes standalone
+✓ search-server-fixed.js - Service recherche Node.js (UTILISE par START.bat)
+✓ categories.json - Definitions categories
+✓ category_mapping.json - Mappings hierarchiques
+✓ START.bat - Script demarrage principal
+✓ STOP.bat - Script arret
+✓ requirements.txt - Dependances Python
+✓ package.json - Metadonnees Node.js
+
+FICHIERS INUTILISES/DUPLICATES DETECTES:
+-----------------------------------------
+
+📦 BACKUPS PYTHON (270.6 KB):
+   - app_backup.py (61.4 KB)
+   - app_backup_before_subfolder_support.py (79.1 KB)
+   - app_before_mapping.py (80.6 KB)
+   - app_test.py (49.1 KB)
+
+📦 BACKUPS HTML (234.6 KB):
+   - index.html.backup (38.4 KB)
+   - index_final_stable_20250919_084153.html (196.2 KB)
+
+📦 BACKUPS BAT (10.4 KB):
+   - START.bat.backup (5.2 KB)
+   - START_original.bat (5.2 KB)
+
+🔄 DUPLICATE:
+   - search-server.js (6.2 KB) - REMPLACE par search-server-fixed.js
+
+🐛 DEBUG JAVASCRIPT (85.3 KB):
+   - debug_*.js (14 fichiers)
+   - diagnostic_*.js (2 fichiers)
+   - check_*.js (4 fichiers)
+   - fix_modal_buttons.js
+   - modal_buttons_fix_summary.js
+
+📝 FICHIERS LOG (~2 KB):
+   - monitor.log
+   - server.err.log
+   - server.log
+   - server.out.log
+   - server.pid
+
+❓ FICHIERS A VERIFIER:
+   - routes_fusion.py (6.6 KB) - NON importe par app.py
+   - routes_structured.py (2.7 KB) - NON importe par app.py
+   - data_structure.json (33.8 KB) - Utilisation a verifier
+   - files_data.json (6.7 KB) - Cache, peut etre regenere
+   - html_config.json (2.0 KB) - Utilisation a verifier
+   - folder_hierarchy.json (1.1 KB) - Utilisation a verifier
+
+================================================================================
+RESUME:
+================================================================================
+Total fichiers supprimables: ~606 KB
+  - Backups: 521.5 KB
+  - Debug JS: 85.3 KB
+  - Logs: ~2 KB
+
+================================================================================
+ACTIONS RECOMMANDEES:
+================================================================================
+
+1. EXECUTER LE SCRIPT DE NETTOYAGE:
+   > cleanup_unused_files.bat
+
+   Ce script va:
+   ✓ Creer archives/
+   ✓ Deplacer tous les backups vers archives/
+   ✓ Supprimer les fichiers de debug JS
+   ✓ Nettoyer les fichiers de log
+
+2. TESTER L'APPLICATION:
+   > START.bat
+   > Verifier que tout fonctionne
+
+3. SI TOUT FONCTIONNE:
+   > Supprimer le dossier archives/
+   > Ou garder comme backup de securite
+
+================================================================================
+IMPORTS DETECTES DANS APP.PY:
+================================================================================
+from flask import Flask, request, jsonify, abort, send_from_directory, make_response
+import os
+import re
+from datetime import datetime
+import json
+import random
+import zipfile
+import shutil
+from functools import lru_cache
+from werkzeug.utils import secure_filename
+from category_path_resolver import get_category_path, get_absolute_category_path
+
+CONCLUSION: Seul category_path_resolver.py est importe en plus des modules standard.
+Les fichiers routes_fusion.py et routes_structured.py ne sont PAS utilises.
+
+================================================================================
+FICHIERS PYTHON UTILITAIRES (non importes mais utilisables manuellement):
+================================================================================
+✓ cleanup_empty_folders.py - Nettoyage dossiers vides
+✓ verify_endpoints.py - Verification endpoints
+✓ organize_data_folders.py - Organisation dossiers data
+✓ generate_notes_data.py - Generation donnees notes
+✓ monitor.py - Monitoring
+✓ ensure_html_consistency.py - Coherence HTML
+✓ validate_html_consistency.py - Validation HTML
+✓ verify_upload_implementation.py - Verification upload
+✓ extract_assets.py - Extraction assets
+✓ html_template_generator.py - Generation templates HTML
+
+Ces fichiers sont des utilitaires qui peuvent etre executes manuellement
+mais ne sont pas importes par l'application principale.
+
+================================================================================

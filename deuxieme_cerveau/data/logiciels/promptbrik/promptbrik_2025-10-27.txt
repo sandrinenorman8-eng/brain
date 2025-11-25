@@ -1,0 +1,188 @@
+20:07:42: # Techniques Avancées de Prompting - Méthodes Expertes
+
+## 1. Structuration Syntaxique Avancée
+
+### A. Hiérarchie Sémantique Imbriquée
+```
+[contexte_global]::([focus_primaire]!!::[attributs_techniques])::([mood_secondaire]::[contraintes_précises])
+```
+
+**Exemple concret :**
+```
+[commercial beauty]::([liquid foundation drop]!!::[macro 100mm, f/2.8, studio softbox])::([luxury mood]::[gold accents, marble surface, no text, no brands])
+```
+
+### B. Syntaxe de Contrôle Compositionnel
+- `<>` : Isolation sémantique (évite la contamination entre concepts)
+- `()` : Groupement logique avec héritage contextuel  
+- `[]` : Containment strict (le contenu ne "saigne" pas sur le reste)
+
+**Exemple :**
+```
+<portrait woman>:: ([confident expression]!! + [professional attire]) <separated from> [minimalist background]:: studio lighting, 85mm
+```
+
+## 2. Exploitation des Biais Modèle (Éthique)
+
+### A. Priming Directionnel
+Le modèle a des associations fortes. Exploitez-les :
+- `cinematic` → active automatiquement depth of field, color grading, aspect ratio thinking
+- `editorial` → active harsh lighting, high contrast, fashion composition rules
+- `lifestyle` → active natural poses, soft lighting, environmental context
+
+### B. Tokens Catalyseurs
+Certains mots déclenchent des cascades d'associations :
+```
+award-winning:: [votre sujet]:: [style souhaité]
+```
+→ Le modèle applique automatiquement des règles de composition "pro"
+
+### C. Négation Intelligente  
+Au lieu de `--not bad quality`, utilisez :
+```
+--not amateur, snapshot, phone camera, harsh flash, centered composition
+```
+→ Plus spécifique = meilleur filtrage
+
+## 3. Contrôle Précis de Composition
+
+### A. Règle des Tiers Forcée
+```
+subject positioned [left third/right third/upper third/lower third]:: environmental context fills remaining space
+```
+
+### B. Guidage de Profondeur
+```
+foreground:[détail net]:: midground:[sujet principal]!!:: background:[flou graduel, bokeh]
+```
+
+### C. Contrôle Éclairage Multi-Sources
+```
+key light:[direction + intensité]:: fill light:[ratio]:: rim light:[couleur]:: ambient:[mood]
+```
+
+**Exemple :**
+```
+key light:45-degree left, soft:: fill light:1/3 ratio:: rim light:warm gold:: ambient:cool blue shadows
+```
+
+## 4. Layering Sémantique Avancé
+
+### A. Méthode "Sandwich"
+```
+[contexte]:: [détail spécifique]!! :: [retour au contexte global] :: [contraintes techniques]
+```
+
+Cette structure force le modèle à maintenir la cohérence globale tout en se concentrant sur le détail.
+
+### B. Injection de Référence Stylistic
+```
+in the style of [photographe/artiste célèbre], but [modification spécifique]
+```
+→ Hérite du style sans copier
+
+### C. Prompting Conditionnel
+```
+if [condition], then [style A], else [style B]
+```
+Simulé par :
+```
+[style dominant] with touches of [style alternatif] when [condition contextuelle]
+```
+
+## 5. Tokens Spéciaux et Pondérations
+
+### A. Pondération Graduée
+- `!` = 1.1×
+- `!!` = 1.21× (1.1²)
+- `!!!` = 1.33× (1.1³)
+- `(mot:1.2)` = contrôle précis à 1.2×
+- `[mot:0.8]` = réduction à 0.8×
+
+### B. Pondération Contextuelle
+```
+(sujet principal:1.3):: (style ambiant:0.9):: (détails techniques:1.1)
+```
+
+### C. Tokens de Cohérence
+- `consistent` → force la cohérence interne
+- `harmonious` → optimise l'harmonie colorimétrique
+- `professional` → applique les règles de composition pro
+
+## 6. Techniques de Série/Cohérence
+
+### A. Template Variables
+```
+[character_base]:: in [scene_N]:: [consistent_style]:: --seed [base_seed + N]
+```
+
+### B. Cohérence Stylistique Multi-Génération
+Utilisez un "style anchor" constant :
+```
+[STYLE_ANCHOR: professional product photography, studio lighting]:: [OBJET_VARIABLE]:: [STYLE_ANCHOR reference maintained]
+```
+
+### C. Évolution Contrôlée
+Pour séries évolutives :
+```
+[état initial] gradually transitioning to [état final] at [pourcentage]% completion
+```
+
+## 7. Optimisations Cachées
+
+### A. Token Order Optimization
+L'ordre influence le poids sémantique :
+```
+[PRIORITÉ 1]:: [PRIORITÉ 2]:: [détails secondaires]
+```
+
+### B. Exploitation CFG par Zone
+```
+high CFG needed: [détails précis]:: medium CFG: [style général]:: low CFG: [ambiance]
+```
+→ Utilisez CFG 10-12 quand vous avez beaucoup de détails techniques
+
+### C. Seed Micro-Variations
+Pour variations subtiles sur même composition :
+```
+base_seed = 1234
+variations = [1234, 1235, 1236, 1237]  # +1, +2, +3
+```
+→ Micro-changements préservant la composition globale
+
+## 8. Techniques Anti-Dérive
+
+### A. Ancrage Sémantique
+Répétez le concept clé :
+```
+[concept principal]:: détails:: [rappel concept principal]:: finitions
+```
+
+### B. Contraintes Dures
+```
+MUST: [éléments obligatoires]:: MAY: [éléments optionnels]:: NEVER: [interdictions]
+```
+
+### C. Validation Interne
+```
+[description] ensuring [critère qualité] is maintained throughout
+```
+
+## 9. Prompts "Canari" - Templates Testés
+
+### Portrait Pro
+```
+editorial portrait:: confident woman, direct gaze!!:: natural makeup, professional attire:: studio lighting, 85mm f/1.4:: shallow depth of field:: --ratio 2:3 --cfg 9 --steps 20 --not amateur, snapshot, harsh shadows
+```
+
+### Produit Luxury  
+```
+luxury product photography:: (premium bottle:1.2) on marble surface!!:: soft studio lighting, subtle reflections:: minimalist composition:: --ratio 4:5 --cfg 10 --steps 22 --not text, logos, cluttered
+```
+
+### Lifestyle Natural
+```
+lifestyle photography:: person enjoying morning coffee!!:: natural window light, cozy interior:: candid moment, soft colors:: --ratio 3:2 --cfg 8 --steps 18 --not posed, artificial, oversaturated
+```
+
+Ces techniques exploitent la logique interne du modèle sans la contourner, maximisant la qualité output tout en restant dans un usage éthique et professionnel.

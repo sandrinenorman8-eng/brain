@@ -1,0 +1,53 @@
+08:09:33: ==================================================
+FILE: api​_2025-09-24.txt
+==================================================
+
+18:56:19: Real Mistral API Key: [MISTRAL_API_KEY_REDACTED] configured
+
+
+
+
+==================================================
+FILE: api​_2025-09-29.txt
+==================================================
+
+03:46:37: [GROQ_API_KEY_REDACTED]  https://console.groq.com/keys
+03:48:47: from groq import Groq
+
+client = Groq()
+completion = client.chat.completions.create(
+    model="moonshotai/kimi-k2-instruct-0905",
+    messages=[
+      {
+        "role": "user",
+        "content": ""
+      }
+    ],
+    temperature=0.6,
+    max_completion_tokens=4096,
+    top_p=1,
+    stream=True,
+    stop=None
+)
+
+for chunk in completion:
+    print(chunk.choices[0].delta.content or "", end="")
+
+
+
+
+==================================================
+FILE: api​_2025-09-30.txt
+==================================================
+
+11:51:15: [GEMINI_API_KEY_REDACTED]  b gemini
+12:44:06: [GEMINI_API_KEY_REDACTED]  gemini
+
+
+
+
+==================================================
+FILE: api​_2025-10-05.txt
+==================================================
+
+02:45:04: [GROQ_API_KEY_REDACTED]   karim cinetas  groq

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Open Folder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        button {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Open Folder - Mapping Hiérarchique</h1>
+    <p>Cliquez sur un bouton pour ouvrir le dossier correspondant.</p>
+    <p>Le dossier devrait s'ouvrir dans l'Explorateur Windows avec le bon chemin hiérarchique.</p>
+    
+    <div>
+        <button onclick="testOpenFolder('todo')">📝 Ouvrir TODO</button>
+        <button onclick="testOpenFolder('memobrik')">🧠 Ouvrir MEMOBRIK</button>
+        <button onclick="testOpenFolder('association')">🤝 Ouvrir ASSOCIATION</button>
+        <button onclick="testOpenFolder('scénario')">🎬 Ouvrir SCÉNARIO</button>
+        <button onclick="testOpenFolder('motivation')">💪 Ouvrir MOTIVATION</button>
+    </div>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function testOpenFolder(category) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `⏳ Ouverture du dossier "${category}"...\n`;
+            
+            try {
+                const response = await fetch(`/open_folder/${encodeURIComponent(category)}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<span class="success">✅ SUCCÈS!</span>\n\n`;
+                    resultDiv.innerHTML += `Catégorie: ${category}\n`;
+                    resultDiv.innerHTML += `Chemin: ${data.path}\n`;
+                    resultDiv.innerHTML += `Status: ${data.status}\n\n`;
+                    resultDiv.innerHTML += `Le dossier devrait s'ouvrir dans l'Explorateur Windows.\n`;
+                    resultDiv.innerHTML += `Vérifiez que le chemin est correct!\n\n`;
+                    
+                    // Vérifier le mapping hiérarchique
+                    if (category === 'todo' && data.path.includes('priorité')) {
+                        resultDiv.innerHTML += `<span class="success">✅ Mapping hiérarchique respecté (priorité/todo)</span>\n`;
+                    } else if (category === 'memobrik' && data.path.includes('logiciels')) {
+                        resultDiv.innerHTML += `<span class="success">✅ Mapping hiérarchique respecté (logiciels/memobrik)</span>\n`;
+                    } else if (category === 'association' && data.path.includes('buziness')) {
+                        resultDiv.innerHTML += `<span class="success">✅ Mapping hiérarchique respecté (buziness/association)</span>\n`;
+                    } else if (category === 'scénario' && data.path.includes('cinema')) {
+                        resultDiv.innerHTML += `<span class="success">✅ Mapping hiérarchique respecté (cinema/scénario)</span>\n`;
+                    } else if (category === 'motivation' && data.path.includes('livres')) {
+                        resultDiv.innerHTML += `<span class="success">✅ Mapping hiérarchique respecté (livres/motivation)</span>\n`;
+                    }
+                } else {
+                    resultDiv.innerHTML = `<span class="error">❌ ERREUR!</span>\n\n`;
+                    resultDiv.innerHTML += `Message: ${data.error || 'Erreur inconnue'}\n`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">❌ EXCEPTION!</span>\n\n`;
+                resultDiv.innerHTML += `Erreur: ${error.message}\n`;
+            }
+        }
+    </script>
+</body>
+</html>

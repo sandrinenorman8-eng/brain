@@ -1,0 +1,21 @@
+00:46:33: use mcp  Browserbase to test fusion ai button and see behavior  here the context : G:\memobrik\.kiro\steering\project_analysis_report.md    before begin browserbase need a fix bb_live_-Q2jqMd3m0I3A3yV7BrCKvl1xAs  projet id : bee5922c-e094-40c2-8279-fe176da275dc
+00:46:46: BSAJI_5ziKeBIlBxgkFbGzSXe5Sw9SK
+00:47:05: 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
+00:47:48: Pro
+Name	Token	Limits
+dead
+Remove
+BSAJI_5ziKeBIlBxgkFbGzSXe5Sw9SK
+Copy
+Reveal
+50 requests per second
+Unlimited requests per month
+Free AI
+Name	Token	Limits
+koli
+Remove
+BSA3eW4iY3LoHh3NY-6Xkcy8n2h2VpH
+Copy
+Reveal
+1 request per second
+2000 requests per month

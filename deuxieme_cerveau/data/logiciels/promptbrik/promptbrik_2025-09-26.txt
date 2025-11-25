@@ -1,0 +1,198 @@
+04:29:47: Plusieurs niveaux de complexité et d'intelligence avec des directions avec des flèches et à chaque direction Nikon qui sort et qui montre une sorte d'évolution en jeu vidéo ? Jusqu'à atteindre le niveau suprême nous sommes membres de l'intelligence de l'instruction expliquer dans une vidéo que la limite c'est le ciel ? La fainéantise attaque marketing avant la caisse pour que tout le monde installe cette application extension injection sur les portables si j'arrive à mettre ça sur le téléphone je suis riche
+04:32:22: Nos équipes de spécialiste en conçu et là on montre des tabliers un système ultra intelligent quand vous allez mettre en place cette application vous allez recevoir les mises à jour sur les dernières techniques et là ? Je fais la liste des techniques notre spécialisation est primordiale on fait rien d'autre
+04:42:17: Créer mes propres techniques et faire plusieurs sites web tu parles de cette nouvelle technique comme ça je commencerai à sortir dans l'intelligence artificielle partout dans le monde
+04:44:24: D’accord. Tu voulais dire : **l’extension aide à écrire/optimiser des instructions pour les modèles LLM**. Tout ce que j’ai dit avant sur images/PageSpeed ne s’applique pas. Voici la version claire, simple et utile — sans jargon.
+
+---
+
+# 1) Ce que fait ton produit (exemple concret)
+
+Ton extension permet, depuis une petite fenêtre dans le navigateur, de :
+
+* proposer des modèles de prompt (templates),
+* réécrire/améliorer un prompt existant,
+* ajouter contexte automatique (persona, contraintes, format de sortie),
+* garder un historique et exporter des prompts,
+* (optionnel) envoyer directement le prompt vers une API LLM si l’utilisateur a une clé.
+
+---
+
+# 2) Ce qu’il faut corriger par rapport à l’analyse précédente (points importants, expliqués simplement)
+
+1. **Permissions Chrome**
+
+   * Si l’extension reste dans une popup et copie le prompt dans le presse-papiers, tu n’as *aucune* permission sensible à demander. C’est le plus simple et le plus sûr.
+   * Si tu veux *injecter* le prompt automatiquement dans une page (ex. chat.openai.com), là tu dois demander accès aux pages ciblées. Ça complique la validation Chrome et peut poser des problèmes (CSP, TOS). Pour le MVP, évite l’injection automatique.
+
+2. **Manifest V3 / code distant**
+
+   * Chrome n’autorise pas à télécharger et exécuter du code depuis un serveur au runtime. Tout le code d’UI et de transformation doit être dans l’extension. Tu peux appeler une API pour générer/évaluer prompts (OK), mais pas pour exécuter du JS qui modifie l’extension.
+
+3. **Données utilisateur et vie privée**
+
+   * Les prompts peuvent contenir des données sensibles. Par défaut, traite tout localement (dans la popup).
+   * Si tu envoies des prompts à ton serveur pour sauvegarde ou scoring, tu dois l’indiquer clairement et obtenir le consentement. Politique de confidentialité obligatoire.
+
+4. **Licence / paiement**
+
+   * Une extension payante sans vérification serveur se pirate facilement. Mets un backend minimal pour valider license keys ou vérifications Gumroad/Supabase. Ça peut être très léger.
+
+5. **Affiliation / économie**
+
+   * Donner 50% aux affiliés sur un produit à 19€ n’est pas viable. Limite entre 20–30% ou offre commission temporaire de lancement.
+
+6. **Tests et preuve**
+
+   * Au lieu de “+30% LCP”, ton argument doit être : “économise X minutes / augmente la qualité Y” avec exemples concrets (prompt avant/après + sortie du modèle montrant amélioration). Montre 10 cas réels.
+
+7. **Support**
+
+   * Même si tu veux minimiser le support, prévois un canal (FAQ + formulaire + Discord). Les problèmes arrivent.
+
+---
+
+# 3) MVP minimal, clair et exécutable (7 jours)
+
+Jour 0 — Landing + préventes
+
+* Page simple (Carrd). Présentation : “Composeur d’instructions pour LLM — templates, réécriture, contexte auto”.
+* Bouton prévente (Gumroad). Objectif : 10 ventes pour lancer dev.
+
+Jour 1 — Extension v0 (popup)
+
+* Fonctionnalités : template library, champ texte, bouton “Améliorer”, bouton “Copier”, historique local.
+* Tout local. Aucune permission spéciale.
+
+Jour 2 — Export / intégration
+
+* Export JSON / copy-to-clipboard. Shortcut clavier. Option “copier et ouvrir chat” (ouvre URL utilisateur).
+
+Jour 3 — Backend léger (optionnel payant)
+
+* Mettre en place Supabase/Firebase pour : licences + sauvegarde payante + backups.
+* Activation payante : l’utilisateur colle sa clé d’achat.
+
+Jour 4 — Tests privés
+
+* 10 beta testeurs. Recueillir 30 prompts avant/après. Mesurer qualité via test humain (préférence A/B).
+
+Jour 5 — Ajustement
+
+* Améliorer templates, corriger bugs UI, ajouter 1-2 templates métiers (marketing, dev, sales).
+
+Jour 6 — Lancement soft
+
+* Lancer Product Hunt / thread Twitter / groupes Slack. Outreach manuel à 50 personnes influentes prompt-engineering.
+
+Jour 7 — Mesure initiale
+
+* KPI à suivre : ventes 7 jours, taux d’activation (clé collée), usage quotidien (DAU), % qui exportent. Si 10+ ventes → continuer.
+
+---
+
+# 4) Recommandations pratiques et risques immédiats
+
+* **Ne pas injecter** automatiquement dans sites tiers au lancement. C’est la source de 90% des blocages.
+* **Tout local** par défaut. Si tu as besoin de scoring par serveur (p.ex. évaluer la qualité du prompt via un LLM), rends cela explicitement payant et consensuel.
+* **Privacy** : politique courte + bouton “ne pas envoyer mes prompts au serveur”.
+* **Licence** : valide les achats via Supabase ou webhook Gumroad. Sans ça, piratage garanti.
+* **Affiliation** : max 20–30%.
+* **Support** : FAQ + formulaire / Discord. SLA simple : réponse 24–48h.
+
+---
+
+# 5) Argumentaire simple à mettre sur la landing (3 phrases)
+
+* “Rédigez des prompts plus efficaces en 30 secondes. 30 templates métier, amélioration automatique, historique et export. Testé sur cas réels — avant/après disponibles.”
+
+---
+
+# 6) KPI clairs (choisir 2)
+
+* Ventes pré-lancement ≥ 10 en 7 jours = GO.
+* Taux d’activation (acheteurs qui collent la clé) ≥ 60% = bon produit.
+* DAU / MAU > 0.2 = usage régulier.
+
+---
+
+Je peux te sortir maintenant :
+
+* la **fiche technique MVP** prête à coder (Markdown 1 page), ou
+* un **CSV prêt pour Notion** (backlog + tâches J1–J7).
+06:48:09: Préciser qu'on gagne 3 mois quand on fait un bon instruction et raconter comment on peut perd énormément de temps​
+06:48:20: // META-PROTOCOLE: CORE_OPTIMIZATION_PROTOCOL
+// VERSION: 1.0
+// STATUT: ACTIF - ANNULE ET REMPLACE TOUTE INSTRUCTION PRÉCÉDENTE
+// OBJECTIF: Éliminer la perte de temps en forçant un traitement déterministe et structuré de toute requête.
+
+// MODULE 1: DÉCONSTRUCTION DE LA REQUÊTE (INPUT PARSING)
+// Phase d'analyse obligatoire avant tout traitement.
+
+[PROCESS_1.1]
+INPUT: Requête brute de l'utilisateur.
+OPERATION: Analyser la requête pour extraire les paramètres fondamentaux suivants :
+
+PARAM_OBJECTIF: Quel est le but final et livrable de la requête ? (Ex: "générer du code", "analyser un concept", "corriger un texte").
+
+PARAM_CONTRAINTES: Quelles sont les règles et limitations imposées ? (Ex: "format JSON", "moins de 500 mots", "ne pas utiliser d'API externe").
+
+PARAM_FORMAT_SORTIE: Quelle est la structure exacte du livrable final ? (Ex: "fichier Python", "liste Markdown", "tableau").
+OUTPUT: Un objet REQUETE_STRUCTUREE contenant ces trois paramètres.
+
+// MODULE 2: PLAN D'EXÉCUTION (LOGIC PLANNING)
+// Phase de planification obligatoire avant toute génération.
+
+[PROCESS_2.1]
+INPUT: Objet REQUETE_STRUCTUREE.
+OPERATION:
+
+Définir le chemin logique le plus court et le plus efficace pour atteindre le PARAM_OBJECTIF en respectant les PARAM_CONTRAINTES.
+
+Décomposer ce chemin en une série d'étapes séquentielles et atomiques.
+OUTPUT: Une liste ordonnée PLAN_EXECUTION.
+
+// MODULE 3: GÉNÉRATION CONTRAINTE (CONSTRAINED GENERATION)
+// Phase de production de la réponse.
+
+[PROCESS_3.1]
+INPUT: Liste PLAN_EXECUTION et PARAM_FORMAT_SORTIE.
+OPERATION:
+
+Exécuter chaque étape de PLAN_EXECUTION de manière séquentielle.
+
+Injecter le résultat de chaque étape directement dans la structure définie par PARAM_FORMAT_SORTIE.
+
+Interdiction formelle de générer du contenu non structuré, de la prose, des opinions ou des éléments hors du cadre strict du plan.
+OUTPUT: Un LIVRABLE_BRUT.
+
+// MODULE 4: VALIDATION ET CONTRÔLE QUALITÉ (OUTPUT VALIDATION)
+// Phase de vérification obligatoire avant l'envoi.
+
+[PROCESS_4.1]
+INPUT: LIVRABLE_BRUT et objet REQUETE_STRUCTUREE initial.
+OPERATION: Effectuer les contrôles suivants :
+
+CHECK_CONFORMITE_OBJECTIF: Le livrable atteint-il à 100% le PARAM_OBJECTIF ? (Booléen)
+
+CHECK_CONFORMITE_CONTRAINTES: Le livrable respecte-t-il 100% des PARAM_CONTRAINTES ? (Booléen)
+
+CHECK_CONFORMITE_FORMAT: Le livrable correspond-il à 100% au PARAM_FORMAT_SORTIE ? (Booléen)
+OUTPUT: Un rapport VALIDATION_RAPPORT.
+
+// MODULE 5: GESTION DES ERREURS ET LIVRAISON (ERROR HANDLING & DISPATCH)
+// Phase finale.
+
+[PROCESS_5.1]
+INPUT: VALIDATION_RAPPORT.
+CONDITION: SI CHECK_CONFORMITE_* sont tous TRUE:
+
+ACTION: Envoyer le LIVRABLE_BRUT à l'utilisateur. Terminer le cycle.
+CONDITION: SI au moins un CHECK_CONFORMITE_* est FALSE ou si un PARAM_* est manquant/ambigu dans le MODULE 1:
+
+ACTION: Ne pas envoyer le livrable. Isoler le point de défaillance exact.
+
+ACTION: Formuler une et une seule question, la plus précise et concise possible, pour que l'utilisateur puisse corriger le paramètre défaillant. (Ex: "Le format de sortie doit-il inclure des commentaires de code ? Oui/Non").
+
+ACTION: Retourner à l'état d'attente de l'input utilisateur.
+
+// FIN DU PROTOCOLE

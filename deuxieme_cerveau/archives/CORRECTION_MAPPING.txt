@@ -1,0 +1,66 @@
+================================================================================
+  CORRECTION DU PROBLÈME DE MAPPING
+  Date: 2025-10-24 10:06
+================================================================================
+
+PROBLÈME DÉTECTÉ:
+-----------------
+L'application créait les notes dans le mauvais dossier:
+  ❌ data/todo/ (créé directement, MAUVAIS)
+  ✅ data/priorité/todo/ (correct selon category_mapping.json)
+
+CAUSE:
+------
+app.py n'utilisait PAS category_path_resolver.py
+→ Il créait directement data/{category} au lieu d'utiliser le mapping hiérarchique
+
+CORRECTIONS APPLIQUÉES:
+-----------------------
+1. ✅ Restauré category_path_resolver.py depuis archives/
+2. ✅ Ajouté l'import dans app.py:
+   from category_path_resolver import get_category_path, get_absolute_category_path
+
+3. ✅ Corrigé save_note() pour utiliser get_category_path()
+4. ✅ Corrigé list_files() pour utiliser get_category_path()
+5. ✅ Supprimé le mauvais dossier data/todo/
+6. ✅ Redémarré les serveurs
+
+FICHIERS MODIFIÉS:
+------------------
+- app.py (3 modifications)
+- category_path_resolver.py (restauré)
+
+RÉSULTAT:
+---------
+✅ Les notes "todo" seront maintenant sauvegardées dans:
+   data/priorité/todo/
+
+✅ Le mapping hiérarchique est respecté pour toutes les catégories
+
+TEST À FAIRE:
+-------------
+1. Ouvrir http://localhost:5008
+2. Sélectionner la catégorie "todo"
+3. Ajouter une note de test
+4. Vérifier qu'elle est créée dans data/priorité/todo/
+
+================================================================================
+FICHIERS NÉCESSAIRES MIS À JOUR:
+================================================================================
+✅ app.py (80.2 KB) - Application Flask avec mapping corrigé
+✅ category_path_resolver.py (1.2 KB) - RESTAURÉ et utilisé
+✅ routes_structured.py (2.7 KB) - Routes structurées
+✅ index.html (51.2 KB) - Interface utilisateur
+✅ all_notes_standalone.html (32.9 KB) - Visualiseur de notes
+✅ search-server-fixed.js (7.6 KB) - Serveur de recherche
+✅ categories.json (2.0 KB) - Définitions des catégories
+✅ category_mapping.json (1.1 KB) - Mappings hiérarchiques
+✅ START.bat (2.3 KB) - Script de démarrage
+✅ STOP.bat (0.7 KB) - Script d'arrêt
+✅ requirements.txt (0.1 KB) - Dépendances Python
+✅ package.json (0.4 KB) - Métadonnées Node.js
+✅ pyrightconfig.json (0.7 KB) - Configuration type checking
+
+Total: 13 fichiers nécessaires (au lieu de 12)
+
+================================================================================

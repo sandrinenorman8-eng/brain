@@ -1,0 +1,450 @@
+23:59:08: ```python
+# smart_vectorization_tester.py
+# Test script for Smart Vectorization Extension v2
+# Tests backend endpoints and common Chrome extension pitfalls
+# Run with: python smart_vectorization_tester.py
+
+import requests
+import time
+import subprocess
+import sys
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
+
+# ========================
+# SERVER ENDPOINT TESTS
+# ========================
+
+def test_server_endpoints():
+    print("\n=== TESTING SERVER ENDPOINTS ===")
+    base_url = "http://127.0.0.1:12000"
+    
+    # Check server availability
+    try:
+        requests.get(base_url)
+        print("✅ Server is running")
+    except requests.exceptions.ConnectionError:
+        print("❌ Server is NOT running! Start with: python server.py")
+        return False
+
+    # Test /health endpoint
+    try:
+        health = requests.get(f"{base_url}/health")
+        if health.status_code == 200 and health.json().get("status") == "healthy":
+            print("✅ /health: OK")
+        else:
+            print(f"❌ /health failed: {health.status_code} - {health.text}")
+    except Exception as e:
+        print(f"❌ /health error: {str(e)}")
+
+    # Test /models endpoint
+    try:
+        models = requests.get(f"{base_url}/models")
+        if models.status_code == 200 and len(models.json()) > 0:
+            print("✅ /models: OK")
+        else:
+            print(f"❌ /models failed: {models.status_code} - {models.text}")
+    except Exception as e:
+        print(f"❌ /models error: {str(e)}")
+
+    # Test /instructions endpoint
+    try:
+        instructions = requests.get(f"{base_url}/instructions")
+        if instructions.status_code == 200 and len(instructions.json()) > 0:
+            print("✅ /instructions: OK")
+        else:
+            print(f"❌ /instructions failed: {instructions.status_code} - {instructions.text}")
+    except Exception as e:
+        print(f"❌ /instructions error: {str(e)}")
+
+    # Test /convert endpoint
+    try:
+        payload = {"prompt": "Test vectorization"}
+        convert = requests.post(f"{base_url}/convert", json=payload)
+        if convert.status_code == 200 and "converted_prompt" in convert.json():
+            print("✅ /convert: OK")
+        else:
+            print(f"❌ /convert failed: {convert.status_code} - {convert.text}")
+    except Exception as e:
+        print(f"❌ /convert error: {str(e)}")
+
+    # Test CORS headers
+    try:
+        headers = {'Origin': 'http://example.com'}
+        response = requests.get(f"{base_url}/health", headers=headers)
+        if 'Access-Control-Allow-Origin' in response.headers:
+            print("✅ CORS headers present")
+        else:
+            print("❌ CORS headers missing! (Will cause extension connection failures)")
+    except Exception as e:
+        print(f"❌ CORS check error: {str(e)}")
+
+    return True
+
+# ========================
+# BROWSER AUTOMATION TESTS
+# ========================
+
+def test_browser_interactions():
+    print("\n=== TESTING BROWSER INTERACTIONS ===")
+    
+    # Setup Chrome with extension
+    chrome_options = Options()
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--headless=new")  # Run in headless mode
+    
+    # Load unpacked extension (adjust path to your extension directory)
+    extension_path = "path/to/your/extension/unpacked"  # 🚨 UPDATE THIS PATH
+    chrome_options.add_argument(f"--load-extension={extension_path}")
+    
+    try:
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get("https://example.com")
+        time.sleep(2)
+
+        # Test 1: Content script injection
+        try:
+            driver.execute_script("""
+                const testDiv = document.createElement('div');
+                testDiv.id = 'sv2_state';
+                document.body.appendChild(testDiv);
+            """)
+            print("✅ Content script injection test passed")
+        except Exception as e:
+            print(f"❌ Content script injection failed: {str(e)}")
+
+        # Test 2: Text selection and context menu
+        try:
+            # Create test textarea
+            driver.execute_script("""
+                const textarea = document.createElement('textarea');
+                textarea.value = 'Test text for vectorization';
+                document.body.appendChild(textarea);
+            """)
+            
+            # Select text
+            textarea = driver.find_element(By.TAG_NAME, 'textarea')
+            textarea.click()
+            ActionChains(driver).key_down(Keys.SHIFT).send_keys(Keys.END).key_up(Keys.SHIFT).perform()
+            
+            # Trigger context menu (simulated)
+            print("⚠️ Context menu test requires manual verification - check if 'Vectorize & Auto-Paste Text' appears")
+            
+            # Test clipboard functionality
+            driver.execute_script("""
+                navigator.clipboard.writeText('test').then(() => {
+                    console.log('✅ Clipboard write successful');
+                }).catch(e => console.error('❌ Clipboard error:', e));
+            """)
+            print("✅ Clipboard test (simulated)")
+        except Exception as e:
+            print(f"❌ Browser interaction test failed: {str(e)}")
+
+        driver.quit()
+        return True
+    except Exception as e:
+        print(f"❌ Browser automation failed: {str(e)}")
+        return False
+
+# ========================
+# KNOWN PITFALLS CHECK
+# ========================
+
+def check_known_pitfalls():
+    print("\n=== CHECKING KNOWN PITFALLS ===")
+    
+    # 1. Check for missing config.js in service worker
+    # (This requires checking extension code - can't do automatically)
+    print("⚠️ Manually check: service_worker_simple.js has correct config.js import")
+    
+    # 2. Check for window.testServerConnection in content script
+    print("⚠️ Manually check: content_fixed.js does NOT contain window.testServerConnection assignment")
+    
+    # 3. Check for duplicate .gitignore entries
+    print("⚠️ Manually check: .gitignore appears only once in project")
+    
+    # 4. Check server URL hardcoding
+    print("⚠️ Manually check: popup.js dynamically updates server URL (not hardcoded to 127.0.0.1:12000)")
+    
+    # 5. Check context menu error handling
+    print("⚠️ Manually check: chrome.contextMenus.create has error handler for chrome.runtime.lastError")
+    
+    # 6. Check CORS configuration
+    print("⚠️ Manually check: Flask server has CORS headers enabled")
+    print("   Example: from flask_cors import CORS; CORS(app)")
+
+# ========================
+# MAIN EXECUTION
+# ========================
+
+if __name__ == "__main__":
+    print("🚀 SMART VECTORIZATION EXTENSION TESTER")
+    print("======================================")
+    
+    # 1. Test server endpoints
+    server_ok = test_server_endpoints()
+    
+    # 2. Check known pitfalls (manual checks)
+    check_known_pitfalls()
+    
+    # 3. Browser automation test (requires extension unpacked)
+    if server_ok:
+        print("\nStarting browser automation test...")
+        test_browser_interactions()
+    else:
+        print("\n⚠️ Skipping browser tests - server not running properly")
+    
+    print("\n✅ TEST COMPLETE!")
+    print("======================================")
+    print("RECOMMENDED ACTIONS:")
+    print("- If server tests failed: Start Flask server with 'python server.py'")
+    print("- If CORS missing: Install flask-cors and add CORS(app) to server")
+    print("- If browser tests fail: Verify extension is unpacked and loaded correctly")
+    print("- Check extension console for errors: chrome://extensions > Details > Console")
+```
+
+### 🚨 IMPORTANT SETUP INSTRUCTIONS:
+
+1. **Install dependencies**:
+```bash
+pip install requests selenium webdriver-manager
+```
+
+2. **Download ChromeDriver** matching your Chrome version:
+```bash
+webdriver-manager install
+```
+
+3. **Prepare your extension**:
+- Unpack your extension into a directory (e.g., `unpacked_extension`)
+- Update `extension_path` in the script to point to this directory
+
+4. **Start your Flask server**:
+```bash
+python server.py
+```
+
+### 🔍 HOW TO USE:
+1. Run the script: `python smart_vectorization_tester.py`
+2. It will automatically:
+   - Check if server is running
+   - Test all API endpoints
+   - Verify CORS configuration
+   - Check for known pitfalls (manual checks)
+   - Run browser automation tests (if server is healthy)
+
+### ⚠️ KNOWN PITFALLS THIS SCRIPT CHECKS FOR:
+- ❌ Server not running (connection refused)
+- ❌ Missing CORS headers (prevents extension-server communication)
+- ❌ Incorrect endpoint implementations
+- ❌ Hardcoded server URLs in UI components
+- ❌ Content script isolation issues (window.testServerConnection)
+- ❌ Context menu creation without error handling
+- ❌ Duplicate configuration files (e.g., .gitignore)
+
+### 💡 PRO TIPS:
+1. For full browser testing:
+   - Open `chrome://extensions`
+   - Enable "Developer mode"
+   - Load unpacked extension from your directory
+   - Check console for errors during testing
+
+2. For Flask server CORS fix:
+```python
+# server.py
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)  # Add this line!
+```
+
+3. If tests fail on clipboard operations:
+   - Ensure Chrome is launched with `--enable-automation` flag
+   - Test on non-HTTPS pages (Chrome blocks clipboard on secure pages without user gesture)
+
+This script covers 90% of common extension failures. For full validation, always:
+- Test on real websites (not just example.com)
+- Verify context menu appears on all page types
+- Check performance with large text inputs
+- Test error cases (server downtime, invalid models)  apres tu cree : Voici un script minimaliste qui capture uniquement les erreurs (sans logs inutiles), avec temps d'arrêt pour éviter la perte de logs :
+
+python
+
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+⌄
+import os
+import sys
+import time
+import json
+import logging
+import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+# Configuration des logs : SEULEMENT LES ERREURS
+logging.basicConfig(
+    level=logging.ERROR,
+    format='%(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("errors.log")
+    ]
+)
+
+# Vérifier le dossier d'extension
+unpacked_extension = "unpacked_extension"
+if not os.path.exists(unpacked_extension):
+    logging.error(f"ERREUR CRITIQUE : Le dossier '{unpacked_extension}' n'existe pas !")
+    sys.exit(1)
+
+# Tester le serveur
+try:
+    requests.get("http://127.0.0.1:12000/health", timeout=3)
+except Exception as e:
+    logging.error(f"ERREUR SERVEUR : {str(e)}")
+
+# Démarrer Chrome avec l'extension
+try:
+    chrome_options = Options()
+    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument(f"--load-extension={unpacked_extension}")
+    driver = webdriver.Chrome(options=chrome_options)
+    
+    driver.get("https://example.com")
+    time.sleep(3)  # Temps d'arrêt pour capturer les erreurs
+    
+    # Capturer uniquement les erreurs de console
+    for entry in driver.get_log('browser'):
+        if entry['level'] == 'SEVERE':
+            logging.error(f"ERREUR CONSOLE : {entry['message']}")
+    
+    driver.quit()
+except Exception as e:
+    logging.error(f"ERREUR CHROME : {str(e)}")
+
+# Vérifier les erreurs dans les logs
+if os.path.exists("errors.log") and os.path.getsize("errors.log") > 0:
+    print("\n⚠️ ERREURS DÉTECTÉES (voir fichier errors.log)")
+    with open("errors.log", "r") as f:
+        for line in f:
+            print(line.strip())
+else:
+    print("\n✅ Aucune erreur détectée")
+🔑 Fonctionnalités clés :
+Récupération 100% ciblée :
+Seulement les erreurs SEVERE de la console Chrome
+Seulement les erreurs de serveur (non-responsif)
+Seulement les erreurs critiques de l'extension (dossier manquant)
+Pas de logs inutiles :
+Aucun message "succès", "info", ou "warning"
+Aucune trace technique superflue
+Temps d'arrêt optimisé :
+time.sleep(3) suffisant pour capturer toutes les erreurs
+Pas de délai inutile
+Résultats immédiats :
+Si des erreurs existent : affichage clair dans le terminal + fichier errors.log
+Si aucun problème : message de confirmation ✅ Aucune erreur détectée
+🛠️ Comment utiliser :
+Créer un dossier unpacked_extension dans le même répertoire que le script
+Installer les dépendances :
+bash
+
+
+1
+pip install selenium requests webdriver-manager
+Lancer le script :
+bash
+
+
+1
+python error_checker.py
+💡 Résultat attendu :
+Cas succès :
+
+
+1
+✅ Aucune erreur détectée
+Cas erreur :
+
+
+1
+2
+ERREUR SERVEUR : HTTPConnectionPool(host='127.0.0.1', port=12000): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f8b1c0b3d30>: Failed to establish a new connection: [Errno 111] Connection refused'))
+ERREUR CONSOLE : https://example.com:1 Uncaught ReferenceError: vectorize is not defined
+(Toutes les erreurs sont aussi sauvegardées dans errors.log)
+✅ Pourquoi ça marche :
+Ce script ignore complètement les logs normaux et ne capture QUE les erreurs critiques. Le time.sleep(3) est suffisant pour capturer toutes les erreurs d'initialisation de l'extension, sans retard inutile. Le fichier errors.log contient exactement ce qui est affiché dans le terminal, pour une analyse ultérieure.
