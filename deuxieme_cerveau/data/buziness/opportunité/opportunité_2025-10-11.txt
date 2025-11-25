@@ -1,0 +1,4 @@
+04:51:21: Pro
+Extended limits on Agent, unlimited Tab completions, max context windows, and more.
+
+Start 7-day trial

@@ -1,0 +1,91 @@
+05:35:35: Bon, à essaie de vérifier les imperfections dans l'instruction que tu m'as donné. Sachant que tu lui donnes un peu, il va sortir de du lien. Je lui donne de chercher des informations, mais tu le bloque pas en fait. Sachant que je suis un professionnel, donc tu vas pas me faire le côté amateur. Voilà le niveau. Où est-ce qu'on est? Tu dois appliquer le protocole. Voici le protocole.# Techniques Avancées de Prompting - Méthodes Expertes
+
+## 1. Structuration Syntaxique Avancée
+
+### A. Hiérarchie Sémantique Imbriquée
+```
+[contexte_global]::([focus_primaire]!!::[attributs_techniques])::([mood_secondaire]::[contraintes_précises])
+```
+
+**Exemple concret :**
+```
+[commercial beauty]::([liquid foundation drop]!!::[macro 100mm, f/2.8, studio softbox])::([luxury mood]::[gold accents, marble surface, no text, no brands])
+```
+
+### B. Syntaxe de Contrôle Compositionnel
+- `<>` : Isolation sémantique (évite la contamination entre concepts)
+- `()` : Groupement logique avec héritage contextuel  
+- `[]` : Containment strict (le contenu ne "saigne" pas sur le reste)
+
+**Exemple :**
+```
+:: ([confident expression]!! + [professional attire])  [minimalist background]:: studio lighting, 85mm
+```
+
+## 2. Exploitation des Biais Modèle (Éthique)
+
+### A. Priming Directionnel
+Le modèle a des associations fortes. Exploitez-les :
+- `cinematic` → active automatiquement depth of field, color grading, aspect ratio thinking
+- `editorial` → active harsh lighting, high contrast, fashion composition rules
+- `lifestyle` → active natural poses, soft lighting, environmental context
+
+### B. Tokens Catalyseurs
+Certains mots déclenchent des cascades d'associations :
+```
+award-winning:: [votre sujet]:: [style souhaité]
+```
+→ Le modèle applique automatiquement des règles de composition "pro"
+
+### C. Négation Intelligente  
+Au lieu de `--not bad quality`, utilisez :
+```
+--not amateur, snapshot, phone camera, harsh flash, centered composition
+```
+→ Plus spécifique = meilleur filtrage
+
+## 3. Contrôle Précis de Composition
+
+### A. Règle des Tiers Forcée
+```
+subject positioned [left third/right third/upper third/lower third]:: environmental context fills remaining space
+```
+
+### B. Guidage de Profondeur
+```
+foreground:[détail net]:: midground:[sujet principal]!!:: background:[flou graduel, bokeh]
+```
+
+### C. Contrôle Éclairage Multi-Sources
+```
+key light:[direction + intensité]:: fill light:[ratio]:: rim light:[couleur]:: ambient:[mood]
+```
+
+**Exemple :**
+```
+key light:45-degree left, soft:: fill light:1/3 ratio:: rim light:warm gold:: ambient:cool blue shadows
+```
+
+## 4. Layering Sémantique Avancé
+
+### A. Méthode "Sandwich"
+```
+[contexte]:: [détail spécifique]!! :: [retour au contexte global] :: [contraintes techniques]
+```
+
+Cette structure force le modèle à maintenir la cohérence globale tout en se concentrant sur le détail.
+
+### B. Injection de Référence Stylistic
+```
+in the style of [photographe/artiste célèbre], but [modification spécifique]
+```
+→ Hérite du style sans copier
+
+### C. Prompting Conditionnel
+```
+if [condition], then [style A], else [style B]
+```
+Simulé par :
+```
+[style dominant] with touches of [style alternatif] when [condition contextuelle]
+```

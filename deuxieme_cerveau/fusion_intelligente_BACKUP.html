@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fusion Intelligente - Organisation IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .fusion-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .fusion-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+        }
+        .loading {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+        }
+        .loading.active {
+            display: flex;
+        }
+        .organized-content {
+            background: white;
+            color: #1f2937;
+            padding: 3rem;
+            border-radius: 12px;
+            max-height: 70vh;
+            overflow-y: auto;
+            line-height: 1.8;
+        }
+        .organized-content h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            color: #1e3a8a;
+            border-bottom: 3px solid #7c3aed;
+            padding-bottom: 1rem;
+        }
+        .organized-content h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: #7c3aed;
+        }
+        .organized-content ul {
+            list-style: none;
+            margin-left: 0;
+            margin-bottom: 1.5rem;
+        }
+        .organized-content li {
+            margin-bottom: 0.75rem;
+            padding-left: 2rem;
+            position: relative;
+        }
+        .organized-content li:before {
+            content: "▸";
+            position: absolute;
+            left: 0.5rem;
+            color: #7c3aed;
+            font-weight: bold;
+        }
+        .organized-content p {
+            margin: 1.5rem 0;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-6 md:p-8 mb-6">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-center md:text-left">
+                    <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">
+                        <i class="fas fa-brain mr-3"></i>
+                        Fusion Intelligente
+                    </h1>
+                    <p class="text-white text-opacity-90 text-sm md:text-base">
+                        Organisation automatique de vos notes par IA (Kimi)
+                    </p>
+                </div>
+                <button onclick="window.location.href='/'" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-lg transition font-semibold">
+                    <i class="fas fa-home mr-2"></i>
+                    Retour
+                </button>
+            </div>
+        </div>
+
+        <!-- Status API -->
+        <div id="apiStatus" class="glass rounded-xl p-4 mb-6 hidden">
+            <div class="flex items-center justify-center">
+                <i class="fas fa-circle text-green-400 mr-3 animate-pulse"></i>
+                <span class="text-white font-semibold">✅ API IA connectée</span>
+            </div>
+        </div>
+
+        <!-- Liste des fusions -->
+        <div class="glass rounded-2xl p-6 md:p-8 mb-6">
+            <h2 class="text-2xl font-bold text-white mb-6">
+                <i class="fas fa-folder-open mr-2"></i>
+                Sélectionnez une fusion à organiser
+            </h2>
+            
+            <div id="fusionsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Les fusions seront chargées ici -->
+            </div>
+            
+            <div id="noFusions" class="text-center text-white text-opacity-70 py-12" style="display: none;">
+                <i class="fas fa-inbox text-6xl mb-4 opacity-50"></i>
+                <p class="text-lg">Aucune fusion disponible</p>
+                <p class="text-sm mt-2">Créez d'abord une fusion depuis la page principale</p>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading items-center justify-center">
+            <div class="glass rounded-2xl p-8 text-center max-w-md">
+                <i class="fas fa-spinner fa-spin text-6xl text-white mb-4"></i>
+                <p class="text-white text-xl font-semibold">Organisation en cours...</p>
+                <p class="text-white text-opacity-70 mt-2">L'IA analyse vos notes</p>
+            </div>
+        </div>
+
+        <!-- Résultat organisé -->
+        <div id="resultContainer" class="glass rounded-2xl p-6 md:p-8 hidden">
+            <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+                <h2 class="text-2xl font-bold text-white">
+                    <i class="fas fa-check-circle mr-2 text-green-400"></i>
+                    Contenu Organisé
+                </h2>
+                <div class="flex gap-2">
+                    <button onclick="copyOrganized()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition font-semibold">
+                        <i class="fas fa-copy mr-2"></i>
+                        Copier
+                    </button>
+                    <button onclick="downloadOrganized()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition font-semibold">
+                        <i class="fas fa-download mr-2"></i>
+                        Télécharger
+                    </button>
+                </div>
+            </div>
+            
+            <div id="organizedContent" class="organized-content">
+                <!-- Le contenu organisé sera affiché ici -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentOrganizedContent = '';
+        let currentFilename = '';
+
+        // TEST AUTOFIX: Ce commentaire est volontairement mal formaté     avec des espaces bizarres
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Page Fusion IA chargée');
+            // Cacher le message par défaut
+            const noFusionsEl = document.getElementById('noFusions');
+            if (noFusionsEl) {
+                noFusionsEl.style.display = 'none';
+                console.log('✅ Message "Aucune fusion" caché au démarrage');
+            }
+            testAPI();
+            loadFusions();
+        });
+
+        async function testAPI() {
+            try {
+                const response = await fetch('/ai/test');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('apiStatus').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Erreur test API:', error);
+            }
+        }
+
+        async function loadFusions() {
+            try {
+                // Ajouter timestamp pour éviter le cache
+                const response = await fetch('/ai/list_fusions?t=' + Date.now());
+                const data = await response.json();
+                
+                console.log('API Response:', data);
+                
+                // L'API retourne: {success: true, data: {fusions: [...]}}
+                const fusions = data.data?.fusions || data.fusions || [];
+                
+                console.log('Fusions trouvées:', fusions.length);
+                
+                if (fusions.length > 0) {
+                    document.getElementById('noFusions').style.display = 'none';
+                    displayFusions(fusions);
+                } else {
+                    document.getElementById('noFusions').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Erreur chargement fusions:', error);
+                document.getElementById('noFusions').style.display = 'block';
+            }
+        }
+
+        function displayFusions(fusions) {
+            const container = document.getElementById('fusionsList');
+            container.innerHTML = '';
+            
+            fusions.forEach(fusion => {
+                const typeIcon = fusion.type === 'global' ? 'fa-globe' : 'fa-folder';
+                const typeColor = fusion.type === 'global' ? 'bg-purple-600' : 'bg-blue-600';
+                const displayName = fusion.display_name || fusion.filename;
+                
+                const card = document.createElement('div');
+                card.className = 'fusion-item glass rounded-xl p-5';
+                card.onclick = () => organizeFusion(fusion);
+                
+                card.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="${typeColor} rounded-lg p-3 mr-4 flex-shrink-0">
+                            <i class="fas ${typeIcon} text-white text-2xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-white font-semibold mb-2 text-lg">${displayName}</h3>
+                            <p class="text-white text-opacity-50 text-xs">
+                                Cliquez pour organiser avec l'IA
+                            </p>
+                        </div>
+                        <i class="fas fa-chevron-right text-white text-opacity-40 ml-2"></i>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        async function organizeFusion(fusion) {
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('resultContainer').classList.add('hidden');
+            
+            try {
+                const categoryName = fusion.filename
+                    .replace(/^fusion_(?:categories_|globale_)?/, '')
+                    .replace(/\.txt$/, '')
+                    .replace(/_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/, '');
+                
+                const response = await fetch('/ai/organize', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        fusion_file: fusion.path,
+                        category_name: categoryName
+                    })
+                });
+                
+                const data = await response.json();
+                const result = data.data || data;
+                
+                if (data.success && result.organized_content) {
+                    currentOrganizedContent = result.organized_content;
+                    currentFilename = result.filename;
+                    displayOrganizedContent(result.organized_content);
+                } else {
+                    alert('❌ Erreur: ' + (data.error || result.error || 'Erreur inconnue'));
+                }
+            } catch (error) {
+                console.error('Erreur organisation:', error);
+                alert('❌ Erreur lors de l\'organisation: ' + error.message);
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+
+        function displayOrganizedContent(content) {
+            const container = document.getElementById('organizedContent');
+            
+            // Convertir le markdown en HTML proprement
+            const lines = content.split('\n');
+            let html = '';
+            let inList = false;
+            
+            lines.forEach(line => {
+                line = line.trim();
+                
+                if (line.startsWith('# ')) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    html += `<h1>${escapeHtml(line.substring(2))}</h1>`;
+                } else if (line.startsWith('## ')) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    html += `<h2>${escapeHtml(line.substring(3))}</h2>`;
+                } else if (line.startsWith('- ')) {
+                    if (!inList) { html += '<ul>'; inList = true; }
+                    html += `<li>${escapeHtml(line.substring(2))}</li>`;
+                } else if (line.startsWith('  - ')) {
+                    html += `<li style="margin-left: 2rem;">${escapeHtml(line.substring(4))}</li>`;
+                } else if (line.length > 0) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    html += `<p>${escapeHtml(line)}</p>`;
+                }
+            });
+            
+            if (inList) html += '</ul>';
+            
+            container.innerHTML = html;
+            document.getElementById('resultContainer').classList.remove('hidden');
+            document.getElementById('resultContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function copyOrganized() {
+            navigator.clipboard.writeText(currentOrganizedContent).then(() => {
+                alert('✅ Contenu copié dans le presse-papier !');
+            }).catch(err => {
+                console.error('Erreur copie:', err);
+                alert('❌ Erreur lors de la copie');
+            });
+        }
+
+        function downloadOrganized() {
+            const blob = new Blob([currentOrganizedContent], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = currentFilename || 'fusion_organisee.md';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

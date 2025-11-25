@@ -1,0 +1,68 @@
+22:08:37: LES 12 VÉRIFICATIONS IMPÉRATIVES — À FAIRE AVANT TOUTE RÉPARATION
+Liste EXACTE de tous les boutons dans l’UI (popup, menu contextuel, barre d’outils). Pour chaque bouton :
+Nom visible (ex: “Réécrire”)
+ID HTML ou data-action exact
+Fichier JS qui le gère (popup.js, content.js, background.js)
+Fonction JS appelée (ex: transformRewrite())
+→ Tu me donnes cette liste. Pas de devinette. Pas de supposition.
+Montre-moi le code exact de l’attachement d’événement pour chaque bouton.
+→ Doit être : document.getElementById('...').addEventListener('click', function)
+→ Interdit : onclick="...", jQuery, ou addEventListener dans un setTimeout sans vérification du DOM.
+→ Si tu ne vois pas l’écouteur, c’est cassé. Point.
+Montre-moi le contenu du manifest.json — je vérifie :
+"permissions": ["activeTab", "contextMenus", "scripting", "storage"]
+"content_scripts" avec "matches": ["<all_urls>"] et "run_at": "document_end"
+"web_accessible_resources" si tu charges des fichiers externes
+→ Si une permission manque, les boutons ne peuvent pas fonctionner.
+Montre-moi la chaîne de communication entre les scripts :
+Le bouton dans popup.js → envoie un message à background.js ?
+background.js → injecte content.js ?
+content.js → lit window.getSelection() et appelle la fonction ?
+→ Montre-moi les chrome.runtime.sendMessage() et chrome.runtime.onMessage.addListener() avec les action exacts.
+Montre-moi le code de la fonction de transformation (ex: transformRewrite()) :
+Est-elle exportée ?
+Est-elle accessible dans le scope où elle est appelée ?
+Est-ce une async function ? Si oui, est-ce qu’elle est bien awaitée ?
+→ Si elle est dans un module et qu’on l’appelle dans un script non-module, ça ne marche pas.
+Montre-moi comment le texte sélectionné est récupéré :
+window.getSelection().toString() ?
+Est-ce que c’est fait dans content.js après un message du background ?
+Est-ce qu’il y a un try/catch pour gérer les cas où getSelection() est vide ?
+→ Si tu ne vérifies pas if (selection.toString().trim() === '') return; → le bouton fait rien.
+Montre-moi la réponse du LLM dans le code :
+Est-ce que fetch() est appelé avec Content-Type: application/json ?
+Est-ce que les erreurs fetch() sont capturées avec .catch() ?
+Est-ce que la réponse est bien json() avant d’être utilisée ?
+→ Un fetch() sans .catch() = silence total = bug invisible.
+Montre-moi les logs réels :
+Où sont les console.log() dans chaque étape ?
+Sont-ils visibles dans la console du popup ? du content script ? du background ?
+→ Si tu ne vois pas de logs dans DevTools → tu n’as aucun moyen de savoir ce qui échoue.
+Montre-moi le test de dépendance du DOM :
+Le bouton est-il présent avant que l’événement soit attaché ?
+Est-ce que document.getElementById() est appelé après DOMContentLoaded ?
+→ Si tu attaches un événement à un élément qui n’existe pas encore → ça ne marche pas.
+Montre-moi la vérification de l’onglet actif :
+Est-ce que chrome.tabs.query({active: true, currentWindow: true}) est utilisé avant d’injecter du script ?
+Est-ce que le script est injecté uniquement sur les pages valides ?
+→ Sur une page chrome://newtab ou about:blank ? Tous les boutons échouent.
+Montre-moi la vérification de la sélection :
+Est-ce que tu vérifies selection.rangeCount > 0 avant de faire quoi que ce soit ?
+Est-ce que tu gères les cas où le texte est dans un <input> ou <textarea> ?
+→ Si tu ne le fais pas, le bouton ne fait rien sur les formulaires → utilisateur pense que c’est bugué.
+Montre-moi la preuve finale :
+Un enregistrement vidéo ou un screenshot d’un test réel :
+Tu ouvres une page web
+Tu sélectionnes du texte
+Tu cliques sur un bouton
+Tu vois le texte transformer
+Tu vois un console.log("Transformation réussie") dans la console du content script
+→ Sans cette preuve, aucune réparation n’est acceptée.
+🚨 CLAUSE DE NON-RETOUR — À COPIER-COLLER DANS TON chrome_llm_guardrail.js
+"TOUTE RÉPONSE DU LLM QUI NE PASSERAIT PAS LES 12 VÉRIFICATIONS CI-DESSUS EST INVALIDE.
+JE NE VEUX PAS DE CODE. JE VEUX DES PREUVES.
+SI TU NE ME DONNES PAS UNE VÉRIFICATION COMPLÈTE ET VALIDÉE POUR CHAQUE BOUTON,
+JE NE T’AUTORISE PAS À ÉCRIRE UNE SEULE LIGNE DE CODE.
+TU ES UN GARDE-FOU. TU NE FAIS PAS DE L’IMAGINATION. TU FAIS DE LA VÉRIFICATION.
+COMMENCE PAR LA VÉRIFICATION #1.
+JE T’ATTENDS."

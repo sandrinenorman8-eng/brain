@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test Interface HTML</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .pass { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        #testResults { margin-top: 20px; }
+        .search-test {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .search-input {
+            width: 200px;
+            padding: 5px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Interface HTML - Recherche</h1>
+        
+        <div class="test-section">
+            <h3>📋 Tests Automatiques</h3>
+            <button onclick="runAllTests()">🚀 Lancer tous les tests</button>
+            <button onclick="testSearchServer()">🔍 Test serveur de recherche</button>
+            <button onclick="testLocalSearch()">📄 Test recherche locale</button>
+            <button onclick="clearResults()">🧹 Effacer résultats</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Tests Manuels de Recherche</h3>
+            <div class="search-test">
+                <input type="text" class="search-input" id="manualSearch" placeholder="Terme de recherche...">
+                <button onclick="testManualSearch()">Tester</button>
+                <button onclick="testSearchTerm('test')">Test "test"</button>
+                <button onclick="testSearchTerm('projet')">Test "projet"</button>
+                <button onclick="testSearchTerm('scénario')">Test "scénario"</button>
+            </div>
+        </div>
+
+        <div id="testResults"></div>
+    </div>
+
+    <script>
+        let testCount = 0;
+        let passCount = 0;
+        let failCount = 0;
+
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = `${new Date().toLocaleTimeString()} - ${message}`;
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+            
+            if (type === 'pass') passCount++;
+            if (type === 'fail') failCount++;
+            testCount++;
+        }
+
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+            testCount = 0;
+            passCount = 0;
+            failCount = 0;
+        }
+
+        async function testSearchServer() {
+            addResult('🔍 Test du serveur de recherche...', 'info');
+            
+            try {
+                // Test status
+                const statusResponse = await fetch('http://localhost:3008/status');
+                if (statusResponse.ok) {
+                    const statusData = await statusResponse.json();
+                    addResult(`✅ Serveur actif: ${statusData.status} (${statusData.categories} catégories)`, 'pass');
+                } else {
+                    addResult(`❌ Serveur répond avec erreur: ${statusResponse.status}`, 'fail');
+                    return;
+                }
+
+                // Test search
+                const searchResponse = await fetch('http://localhost:3008/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ term: 'test' })
+                });
+
+                if (searchResponse.ok) {
+                    const searchData = await searchResponse.json();
+                    const resultCount = searchData.results ? searchData.results.length : 0;
+                    addResult(`✅ Recherche fonctionne: ${resultCount} résultats pour "test"`, 'pass');
+                    
+                    if (resultCount > 0) {
+                        const firstResult = searchData.results[0];
+                        addResult(`📄 Premier résultat: ${firstResult.category}/${firstResult.filename}`, 'info');
+                        if (firstResult.excerpts && firstResult.excerpts.length > 0) {
+                            addResult(`📝 Extrait: "${firstResult.excerpts[0].text.substring(0, 50)}..."`, 'info');
+                        }
+                    }
+                } else {
+                    addResult(`❌ Recherche échoue: ${searchResponse.status}`, 'fail');
+                }
+
+            } catch (error) {
+                addResult(`❌ Erreur serveur: ${error.message}`, 'fail');
+                addResult('💡 Démarrez le serveur avec: node search-server.js', 'info');
+            }
+        }
+
+        function testLocalSearch() {
+            addResult('📄 Test de la recherche locale...', 'info');
+            
+            // Test data structure
+            const testData = {
+                "test": [
+                    { name: "test_2025-09-19.txt", date: "2025-09-19" },
+                    { name: "test_2025-09-17.txt", date: "2025-09-17" }
+                ],
+                "scénario": [
+                    { name: "scénario_2025-09-19.txt", date: "2025-09-19" }
+                ]
+            };
+
+            // Test local search logic
+            const searchTerm = 'test';
+            const results = [];
+            
+            Object.keys(testData).forEach(category => {
+                testData[category].forEach(file => {
+                    if (file.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        category.toLowerCase().includes(searchTerm.toLowerCase())) {
+                        results.push({ category, file: file.name });
+                    }
+                });
+            });
+
+            if (results.length > 0) {
+                addResult(`✅ Recherche locale fonctionne: ${results.length} résultats pour "${searchTerm}"`, 'pass');
+                results.forEach(result => {
+                    addResult(`📁 ${result.category}/${result.file}`, 'info');
+                });
+            } else {
+                addResult(`❌ Recherche locale ne trouve rien pour "${searchTerm}"`, 'fail');
+            }
+        }
+
+        async function testSearchTerm(term) {
+            addResult(`🔍 Test recherche pour "${term}"...`, 'info');
+            
+            try {
+                const response = await fetch('http://localhost:3008/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ term: term })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const count = data.results ? data.results.length : 0;
+                    
+                    if (count > 0) {
+                        addResult(`✅ "${term}": ${count} résultats trouvés`, 'pass');
+                        data.results.slice(0, 3).forEach(result => {
+                            addResult(`   📄 ${result.category}/${result.filename} (${result.match_count} correspondances)`, 'info');
+                        });
+                    } else {
+                        addResult(`⚠️ "${term}": Aucun résultat (normal si le terme n'existe pas dans les fichiers)`, 'info');
+                    }
+                } else {
+                    addResult(`❌ "${term}": Erreur ${response.status}`, 'fail');
+                }
+            } catch (error) {
+                addResult(`❌ "${term}": ${error.message}`, 'fail');
+            }
+        }
+
+        function testManualSearch() {
+            const term = document.getElementById('manualSearch').value.trim();
+            if (term) {
+                testSearchTerm(term);
+            } else {
+                addResult('⚠️ Veuillez entrer un terme de recherche', 'info');
+            }
+        }
+
+        async function runAllTests() {
+            clearResults();
+            addResult('🚀 Démarrage des tests complets...', 'info');
+            
+            await testSearchServer();
+            testLocalSearch();
+            
+            // Test des termes spécifiques
+            const testTerms = ['test', 'projet', 'scénario', 'intelligence', 'robot'];
+            for (const term of testTerms) {
+                await testSearchTerm(term);
+                await new Promise(resolve => setTimeout(resolve, 500)); // Pause entre les tests
+            }
+            
+            addResult(`📊 Tests terminés: ${passCount}/${testCount} réussis (${((passCount/testCount)*100).toFixed(1)}%)`, 
+                     passCount === testCount ? 'pass' : (passCount > testCount/2 ? 'info' : 'fail'));
+        }
+
+        // Test automatique au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            addResult('🎯 Interface de test chargée', 'pass');
+            addResult('💡 Cliquez sur "Lancer tous les tests" pour commencer', 'info');
+        });
+
+        // Permettre la recherche avec Entrée
+        document.getElementById('manualSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                testManualSearch();
+            }
+        });
+    </script>
+</body>
+</html>

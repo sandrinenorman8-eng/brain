@@ -1,0 +1,104 @@
+03:19:35: # =============================================
+# 🔥 NETTOYAGE TOTAL DE VISUAL STUDIO CODE
+# Supprime TOUT : extensions, config, cache, install, tâches, etc.
+# =============================================
+
+Write-Host "🛑 Fermeture forcée de tous les processus VS Code..." -ForegroundColor Red
+Stop-Process -Name "Code", "Code Helper", "Code - Insiders" -Force -ErrorAction SilentlyContinue
+
+Start-Sleep -Seconds 2
+
+# === 1. Supprimer les dossiers principaux ===
+$DossiersASupprimer = @(
+    "$env:USERPROFILE\.vscode",                     # Extensions classiques
+    "$env:USERPROFILE\.vscode-insiders",            # Version Insiders
+    "$env:APPDATA\Code",                            # Config utilisateur
+    "$env:APPDATA\Code - Insiders",
+    "$env:LOCALAPPDATA\Programs\Microsoft VS Code", # Installation classique
+    "$env:LOCALAPPDATA\Programs\Microsoft VS Code Insiders",
+    "$env:LOCALAPPDATA\Code",                       # Cache & données locales
+    "$env:LOCALAPPDATA\Code - Insiders"
+)
+
+foreach ($Dossier in $DossiersASupprimer) {
+    if (Test-Path $Dossier) {
+        Write-Host "🗑️  Suppression : $Dossier" -ForegroundColor Yellow
+        Remove-Item -Recurse -Force $Dossier
+    }
+}
+
+# === 2. Supprimer les entrées du registre (si installé via .exe) ===
+$RegKeys = @(
+    "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{EA457B21-F73E-494C-ACAB-524FDE069978}_is1", # VS Code
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{EA457B21-F73E-494C-ACAB-524FDE069978}_is1"
+)
+
+foreach ($Key in $RegKeys) {
+    if (Test-Path $Key) {
+        Write-Host "🗑️  Suppression clé registre : $Key" -ForegroundColor Magenta
+        Remove-Item -Path $Key -Recurse -Force
+    }
+}
+
+# === 3. Supprimer les tâches planifiées liées à VS Code ===
+$TachesVSCode = Get-ScheduledTask | Where-Object {
+    $_.TaskName -like "*Code*" -or
+    $_.TaskName -like "*VSCode*" -or
+    $_.TaskPath -like "*Code*"
+}
+
+if ($TachesVSCode) {
+    foreach ($Tache in $TachesVSCode) {
+        Write-Host "⏰ Suppression tâche planifiée : $($Tache.TaskName)" -ForegroundColor Cyan
+        Unregister-ScheduledTask -TaskName $Tache.TaskName -TaskPath $Tache.TaskPath -Confirm:$false
+    }
+} else {
+    Write-Host "ℹ️  Aucune tâche planifiée liée à VS Code trouvée." -ForegroundColor Gray
+}
+
+# === 4. Nettoyer les variables d'environnement (si ajouté au PATH) ===
+$Path = [System.Environment]::GetEnvironmentVariable("Path", "User")
+if ($Path -match "Microsoft VS Code") {
+    $NouveauPath = ($Path.Split(';') | Where-Object { $_ -notlike "*Microsoft VS Code*" }) -join ';'
+    [System.Environment]::SetEnvironmentVariable("Path", $NouveauPath, "User")
+    Write-Host "🧹 Variable PATH utilisateur nettoyée." -ForegroundColor Green
+}
+
+# === 5. Supprimer les raccourcis ===
+$Raccourcis = @(
+    "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Visual Studio Code",
+    "$env:DESKTOP\Visual Studio Code.lnk"
+)
+foreach ($Racc in $Raccourcis) {
+    if (Test-Path $Racc) {
+        Remove-Item $Racc -Force
+        Write-Host "🗑️  Raccourci supprimé : $Racc" -ForegroundColor Gray
+    }
+}
+
+# === 6. (Optionnel) Supprimer les dossiers `.vscode` dans vos projets ===
+# ⚠️ Cela effacera les réglages de projet (launch.json, tasks.json, etc.)
+$Reponse = Read-Host "`n⚠️  Voulez-vous aussi supprimer TOUS les dossiers `.vscode` dans vos documents ? (o/n)"
+if ($Reponse -eq 'o' -or $Reponse -eq 'O') {
+    $DossiersProjets = @(
+        "$env:USERPROFILE\Documents",
+        "$env:USERPROFILE\Desktop",
+        "$env:USERPROFILE\Source",
+        "$env:USERPROFILE\Projects"
+    )
+    foreach ($Dossier in $DossiersProjets) {
+        if (Test-Path $Dossier) {
+            $DossiersVSCodeProjets = Get-ChildItem -Path $Dossier -Recurse -Directory -Name ".vscode" -ErrorAction SilentlyContinue
+            foreach ($D in $DossiersVSCodeProjets) {
+                $CheminComplet = Join-Path $Dossier $D
+                Write-Host "🗑️  Suppression projet .vscode : $CheminComplet" -ForegroundColor Red
+                Remove-Item -Recurse -Force (Split-Path $CheminComplet)
+            }
+        }
+    }
+}
+
+Write-Host "`n✅ NETTOYAGE TOTAL TERMINÉ." -ForegroundColor Green
+Write-Host "➡️  Redémarrez votre ordinateur pour garantir l'effacement complet des processus résiduels." -ForegroundColor Yellow
+Write-Host "🔒 Ensuite, scannez avec Malwarebytes ou Windows Defender pour confirmer la propreté du système." -ForegroundColor Cyan
+05:00:15: Pour créer une extension, toujours reprendre à zéro.

@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Deuxième Cerveau - Design Stitch</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect" />
+    <link as="style"
+        href="https://fonts.googleapis.com/css2?display=swap&amp;family=Manrope:wght@400;500;700;800&amp;family=Orbitron:wght@400;700"
+        onload="this.rel='stylesheet'" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00f6ff",
+                        "primary-dark": "#0d1b2a",
+                        "accent": "#ff00e5",
+                        "background-dark": "#0a0a0a",
+                        "success": "#28a745",
+                        "error": "#dc3545",
+                    },
+                    fontFamily: {
+                        "display": ["Orbitron", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'glow-primary': '0 0 15px 2px rgba(0, 246, 255, 0.4)',
+                        'glow-accent': '0 0 15px 2px rgba(255, 0, 229, 0.4)',
+                        'inner-strong': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.5)',
+                    }
+                },
+            },
+        }
+    </script>
+
+    <style>
+        body {
+            background-image: url('https://images.unsplash.com/photo-1549488344-cbb6c144eda4?q=80&w=1974&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .glass-effect {
+            background: rgba(13, 27, 42, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 246, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 8px rgba(0, 246, 255, 0.7);
+        }
+
+        .section-content.collapsed {
+            max-height: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            overflow: hidden !important;
+            margin-top: 0 !important;
+            opacity: 0 !important;
+        }
+
+        .collapse-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        /* Modal button styles */
+        .modal-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .cancel-btn {
+            background-color: rgba(107, 114, 128, 0.2);
+            color: #e5e7eb;
+        }
+
+        .cancel-btn:hover {
+            background-color: rgba(107, 114, 128, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .confirm-btn {
+            background-color: #ff00e5;
+            color: white;
+            box-shadow: 0 0 10px rgba(255, 0, 229, 0.3);
+        }
+
+        .confirm-btn:hover:not(:disabled) {
+            background-color: #e000d1;
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(255, 0, 229, 0.5);
+        }
+
+        .confirm-btn:disabled {
+            background-color: rgba(255, 0, 229, 0.3);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Checkbox hover effects */
+        .category-checkbox:hover {
+            background-color: rgba(0, 246, 255, 0.1);
+        }
+
+        .category-checkbox input[type="checkbox"] {
+            accent-color: #00f6ff;
+        }
+
+        /* Delete buttons in slides */
+        .delete-btn,
+        .erase-btn {
+            background-color: rgba(239, 68, 68, 0.2) !important;
+            color: #f87171 !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            font-size: 11px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 20px !important;
+            min-height: 20px !important;
+        }
+
+        .delete-btn:hover,
+        .erase-btn:hover {
+            background-color: rgba(239, 68, 68, 0.4) !important;
+            color: #ef4444 !important;
+            border-color: rgba(239, 68, 68, 0.5) !important;
+            transform: scale(1.05) !important;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2) !important;
+        }
+
+        .delete-btn:active,
+        .erase-btn:active {
+            transform: scale(0.95) !important;
+            background-color: rgba(239, 68, 68, 0.6) !important;
+        }
+
+        /* Action buttons in slides */
+        .action-btn {
+            background-color: rgba(0, 246, 255, 0.1) !important;
+            color: #00f6ff !important;
+            border: 1px solid rgba(0, 246, 255, 0.2) !important;
+            padding: 4px 8px !important;
+            border-radius: 6px !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 4px !important;
+        }
+
+        .action-btn:hover {
+            background-color: rgba(0, 246, 255, 0.2) !important;
+            border-color: rgba(0, 246, 255, 0.4) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 8px rgba(0, 246, 255, 0.3) !important;
+        }
+
+        .action-btn:active {
+            transform: translateY(0) !important;
+            background-color: rgba(0, 246, 255, 0.3) !important;
+        }
+
+        /* Filter buttons */
+        .filter-btn {
+            background-color: rgba(0, 246, 255, 0.1) !important;
+            color: #00f6ff !important;
+            border: 1px solid rgba(0, 246, 255, 0.2) !important;
+            padding: 6px 12px !important;
+            border-radius: 6px !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 4px !important;
+        }
+
+        .filter-btn:hover {
+            background-color: rgba(0, 246, 255, 0.2) !important;
+            border-color: rgba(0, 246, 255, 0.4) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .filter-btn.active,
+        .filter-btn:active {
+            background-color: #00f6ff !important;
+            color: #0d1b2a !important;
+            border-color: #00f6ff !important;
+            box-shadow: 0 0 10px rgba(0, 246, 255, 0.4) !important;
+        }
+
+        /* Folder section emoji-only buttons */
+        .folder-item .action-btn,
+        .folder-item .erase-btn {
+            background: transparent !important;
+            border: none !important;
+            padding: 2px !important;
+            border-radius: 4px !important;
+            font-size: 16px !important;
+            min-width: auto !important;
+            min-height: auto !important;
+            width: 24px !important;
+            height: 24px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        .folder-item .action-btn:hover {
+            background-color: rgba(0, 246, 255, 0.1) !important;
+            transform: none !important;
+        }
+
+        .folder-item .erase-btn:hover {
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            transform: none !important;
+        }
+
+        .folder-item .fusion-btn:hover {
+            background-color: rgba(0, 246, 255, 0.1) !important;
+            transform: none !important;
+            color: #00f6ff !important;
+        }
+
+        /* Ensure buttons are clickable */
+        .delete-btn,
+        .erase-btn,
+        .action-btn,
+        .filter-btn,
+        .fusion-btn {
+            pointer-events: auto !important;
+            user-select: none !important;
+        }
+
+        .delete-btn:focus,
+        .erase-btn:focus,
+        .action-btn:focus,
+        .filter-btn:focus,
+        .fusion-btn:focus {
+            outline: 2px solid #00f6ff !important;
+            outline-offset: 2px !important;
+        }
+
+        /* Folder section improvements */
+        #folder-buttons {
+            width: 100%;
+            box-sizing: border-box;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            min-height: auto;
+        }
+
+        #folders-section {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            height: auto;
+        }
+
+        #folders-section .section-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            height: auto;
+        }
+
+        /* Folder item styling - consolidated and improved */
+        .folder-item {
+            width: 100%;
+            margin-bottom: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            background: rgba(59, 130, 246, 0.05);
+            transition: all 0.2s ease;
+            overflow: visible;
+            box-sizing: border-box;
+        }
+
+        .folder-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .folder-item .folder-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 12px;
+            min-height: auto;
+            height: auto;
+            gap: 12px;
+        }
+
+        .folder-item .folder-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            min-width: 0;
+            gap: 12px;
+        }
+
+        .folder-item .folder-info .category-emoji {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .folder-item .folder-info .category-name {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .folder-item .folder-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .folder-item .action-btn,
+        .folder-item .erase-btn {
+            min-width: 36px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 6px;
+            color: #3b82f6;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .folder-item .action-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        .folder-item .erase-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        .no-folders {
+            text-align: center;
+            padding: 20px;
+            color: rgba(156, 163, 175, 0.7);
+            font-style: italic;
+        }
+
+        /* Special button for All Notes */
+        #all-notes-button {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #all-notes-button:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+            transform: translateY(-2px);
+        }
+
+        #all-notes-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        #all-notes-button:hover::before {
+            left: 100%;
+        }
+
+        /* Responsive design for folder section */
+        @media (max-width: 768px) {
+            .folder-item .folder-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                min-height: auto;
+            }
+
+            .folder-item .folder-actions {
+                align-self: flex-end;
+            }
+
+            .folder-item .category-name {
+                white-space: normal;
+                word-break: break-word;
+                max-width: 100%;
+            }
+
+            #folders-section .section-content {
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            .folder-item .action-btn,
+            .folder-item .erase-btn {
+                min-width: 32px;
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
+            .folder-item .folder-info .category-emoji {
+                font-size: 1.25rem;
+            }
+
+            .folder-item .folder-content {
+                padding: 8px;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-background-dark font-body text-white">
+    <div id="app-container" class="min-h-screen bg-black/60">
+
+        <div class="dynamic-container grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 md:p-5 min-h-screen">
+            <div class="dynamic-section glass-effect rounded-xl shadow-lg" id="main-section" data-section="main">
+                <div
+                    class="section-header flex items-center justify-between p-4 border-b border-primary/20 cursor-move">
+                    <h1 class="text-2xl font-display text-primary text-glow">🧠 Deuxième Cerveau</h1>
+                    <div class="fusion-buttons flex gap-2">
+                        <button
+                            class="h-10 px-4 text-sm font-bold text-primary-dark bg-primary rounded-lg hover:bg-white transition-colors shadow-glow-primary"
+                            onclick="handleGlobalFusionClick(this)">Fusion Globale</button>
+                        <button
+                            class="h-10 px-4 text-sm font-bold text-white bg-accent rounded-lg hover:bg-white hover:text-accent transition-colors shadow-glow-accent"
+                            onclick="handleCategoryFusionClick(this)">Fusion Catégorie</button>
+                    </div>
+                    <button
+                        class="control-btn collapse-btn w-8 h-8 flex-shrink-0 rounded-full bg-primary/20 hover:bg-primary/40 transition-colors"
+                        onclick="toggleSection('main-section')" title="Réduire/Agrandir">
+                        <span class="collapse-icon transition-transform duration-300">▼</span>
+                    </button>
+                </div>
+                <div class="section-content p-4 space-y-4 transition-all duration-500">
+                    <button
+                        class="w-full h-12 px-6 font-bold text-white bg-green-500/80 rounded-lg hover:bg-green-500 transition-all shadow-lg"
+                        onclick="createBackup()" id="backup-button">
+                        💾 Créer un Backup Complet
+                    </button>
+                    <button
+                        class="w-full h-12 px-6 font-bold text-white bg-yellow-500/80 rounded-lg hover:bg-yellow-500 transition-all shadow-lg"
+                        onclick="openUploadModal()" id="upload-button">
+                        📤 Télécharger un Fichier
+                    </button>
+                    <button
+                        class="w-full h-12 px-6 font-bold text-white bg-blue-500/80 rounded-lg hover:bg-blue-500 transition-all shadow-lg"
+                        onclick="openAllNotes()" id="all-notes-button">
+                        📋 Voir Toutes les Notes
+                    </button>
+                    <textarea id="note-input"
+                        class="w-full h-36 p-4 text-base rounded-lg border border-primary/30 bg-primary-dark/50 text-white placeholder-primary/60 focus:ring-2 focus:ring-primary focus:border-primary focus:shadow-glow-primary transition-shadow duration-300"
+                        placeholder="Écris ton idée et clique sur une catégorie..." autofocus></textarea>
+
+                    <div id="categories-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+
+                    <div class="new-category flex flex-col sm:flex-row gap-4">
+                        <div class="relative flex-1">
+                            <input type="text" id="new-category-name" placeholder="Nom de la nouvelle catégorie..."
+                                class="w-full h-14 px-4 text-lg rounded-lg border border-primary/30 bg-primary-dark/50 text-white placeholder-primary/60 focus:ring-2 focus:ring-primary focus:border-primary focus:shadow-glow-primary transition-shadow duration-300"
+                                maxlength="19" oninput="limitInputLength(this, 19)"
+                                onkeypress="if(event.key==='Enter') addNewCategory()">
+                            <div id="char-counter"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-primary/60">0/19</div>
+                        </div>
+                        <button
+                            class="h-14 px-6 text-lg font-bold text-primary-dark bg-primary rounded-lg hover:bg-white transition-colors shadow-glow-primary flex-shrink-0"
+                            onclick="addNewCategory()">+ Ajouter</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dynamic-section glass-effect rounded-xl shadow-lg overflow-visible" id="folders-section"
+                data-section="folders" style="height: auto; min-height: 200px;">
+                <div
+                    class="section-header flex items-center justify-between p-4 border-b border-primary/20 cursor-move">
+                    <h2 class="text-xl font-display text-primary text-glow">📂 Dossiers</h2>
+                    <button
+                        class="control-btn collapse-btn w-8 h-8 flex-shrink-0 rounded-full bg-primary/20 hover:bg-primary/40 transition-colors"
+                        onclick="toggleSection('folders-section')" title="Réduire/Agrandir">
+                        <span class="collapse-icon transition-transform duration-300">▼</span>
+                    </button>
+                </div>
+                <div class="section-content p-4 transition-all duration-500 overflow-y-auto">
+                    <div class="text-sm text-primary/70 mb-4">Clique sur un bouton pour voir les fichiers de la
+                        catégorie.</div>
+                    <div id="folder-buttons" class="grid grid-cols-1 gap-3 max-w-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Fusion Modal -->
+    <div id="fusionModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden">
+        <div class="glass-effect rounded-xl w-full max-w-md">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 id="fusionModalTitle" class="text-xl font-display text-primary text-glow">🔗 Fusion des Notes
+                    </h2>
+                    <button class="text-white hover:text-primary transition-colors"
+                        onclick="ui.closeFusionModal()">&times;</button>
+                </div>
+                <div id="fusionModalContent">
+                    <!-- Content will be dynamically generated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden">
+        <div class="glass-effect rounded-xl w-full max-w-md">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-display text-primary text-glow">📤 Télécharger un Fichier</h2>
+                    <button class="text-white hover:text-primary transition-colors"
+                        onclick="closeUploadModal()">&times;</button>
+                </div>
+                <div id="uploadModalContent">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-white mb-2">Sélectionner un fichier :</label>
+                            <input type="file" id="fileInput"
+                                class="w-full p-2 rounded-lg border border-primary/30 bg-primary-dark/50 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-dark hover:file:bg-white file:cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block text-white mb-2">Sélectionner la catégorie de destination :</label>
+                            <select id="categorySelect"
+                                class="w-full p-3 rounded-lg border border-primary/30 bg-primary-dark/50 text-white focus:ring-2 focus:ring-primary focus:border-primary">
+                                <option value="">-- Choisir une catégorie --</option>
+                            </select>
+                        </div>
+                        <div id="uploadStatus" class="text-sm text-center hidden"></div>
+                        <div class="flex space-x-3 justify-end">
+                            <button class="modal-btn cancel-btn" onclick="closeUploadModal()">Annuler</button>
+                            <button class="modal-btn confirm-btn" onclick="uploadFile()"
+                                id="uploadConfirmBtn">Télécharger</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VERSION DE SECOURS - FONCTIONS DIRECTES SANS MODULES -->
+    <script>
+        console.log("🛟 VERSION DE SECOURS - Chargement des fonctions de base");
+
+        // Fonctions API de base (sans modules)
+        window.api = {
+            async loadCategories() {
+                try {
+                    const response = await fetch('/categories');
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const categories = await response.json();
+                    console.log(`📂 Chargé ${categories.length} catégories`);
+                    return categories;
+                } catch (error) {
+                    console.error('❌ Erreur chargement catégories:', error);
+                    throw error;
+                }
+            },
+
+            async performGlobalFusion() {
+                try {
+                    const response = await fetch('/fusion/global', { method: 'POST' });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const result = await response.json();
+                    console.log('🔗 Fusion globale terminée');
+                    return result;
+                } catch (error) {
+                    console.error('❌ Erreur fusion globale:', error);
+                    throw error;
+                }
+            },
+
+            async performCategoryFusion(selectedCategories) {
+                try {
+                    const response = await fetch('/fusion/category', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ categories: selectedCategories })
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const result = await response.json();
+                    console.log('🔗 Fusion par catégories terminée');
+                    return result;
+                } catch (error) {
+                    console.error('❌ Erreur fusion catégories:', error);
+                    throw error;
+                }
+            }
+        };
+
+        // Fonctions UI de base
+        window.ui = {
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${type === 'success' ? 'bg-green-500' :
+                    type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+                    } text-white`;
+                notification.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xl">${type === 'success' ? '✅' :
+                        type === 'error' ? '❌' : 'ℹ️'
+                    }</span>
+                            <span>${message}</span>
+                        </div>
+                        <button class="ml-4 text-white hover:text-gray-200" onclick="this.parentElement.parentElement.remove()">×</button>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 5000);
+            },
+
+            closeFusionModal() {
+                const modal = document.getElementById('fusionModal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.style.display = 'none';
+                }
+            }
+        };
+
+        // Fonctions principales - VERSION ROBUSTE
+        // Fonctions séparées pour chaque bouton de fusion
+        window.handleGlobalFusionClick = async function (button) {
+            console.log('🔗 Clic fusion globale');
+            console.log('🔘 Bouton cliqué:', button.textContent);
+
+            try {
+                // Afficher la modale de fusion globale
+                if (window.ui && window.ui.showFusionModal) {
+                    window.ui.showFusionModal('global', [], window.handleGlobalFusion, null);
+                } else {
+                    // Fallback: créer la modale manuellement
+                    showGlobalFusionModalFallback();
+                }
+            } catch (error) {
+                console.error('❌ Erreur dans handleGlobalFusionClick:', error);
+                alert('Erreur lors du traitement de la fusion globale. Voir console pour détails.');
+            }
+        };
+
+        window.handleCategoryFusionClick = async function (button) {
+            console.log('🔗 Clic fusion par catégories');
+            console.log('🔘 Bouton cliqué:', button.textContent);
+
+            try {
+                // Charger les catégories
+                let categories = [];
+                try {
+                    console.log('📂 Chargement des catégories...');
+                    if (window.api && window.api.loadCategories) {
+                        categories = await window.api.loadCategories();
+                    } else {
+                        // Fallback direct API call
+                        const response = await fetch('/categories');
+                        if (response.ok) {
+                            categories = await response.json();
+                        }
+                    }
+                    console.log(`✅ ${categories.length} catégories chargées`);
+                } catch (error) {
+                    console.error('❌ Erreur chargement catégories:', error);
+                    categories = [];
+                }
+
+                // Afficher la modale de fusion par catégories
+                if (window.ui && window.ui.showFusionModal) {
+                    window.ui.showFusionModal('category', categories, null, window.handleCategoryFusion);
+                } else {
+                    // Fallback: créer la modale manuellement
+                    showCategoryFusionModalFallback(categories);
+                }
+            } catch (error) {
+                console.error('❌ Erreur dans handleCategoryFusionClick:', error);
+                alert('Erreur lors du traitement de la fusion par catégories. Voir console pour détails.');
+            }
+        };
+
+        // Fonction de compatibilité pour l'ancien système
+        window.handleFusionButtonClick = async function (button, type) {
+            if (type === 'global') {
+                return window.handleGlobalFusionClick(button);
+            } else if (type === 'category') {
+                return window.handleCategoryFusionClick(button);
+            }
+        };
+
+        // Fonctions fallback séparées pour chaque type de fusion
+        function showGlobalFusionModalFallback() {
+            const modal = document.getElementById('fusionModal');
+            const title = document.getElementById('fusionModalTitle');
+            const content = document.getElementById('fusionModalContent');
+
+            title.textContent = '🔗 Fusion Globale';
+            content.innerHTML = `
+                <p class="text-white mb-4">Fusionner toutes les notes de toutes les catégories en un seul fichier ?</p>
+                <div class="flex space-x-3 justify-end">
+                    <button class="modal-btn cancel-btn" onclick="closeFusionModalFallback()">Annuler</button>
+                    <button class="modal-btn confirm-btn" onclick="closeFusionModalFallback(); handleGlobalFusionFallback()">Fusionner</button>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function showCategoryFusionModalFallback(categories) {
+            const modal = document.getElementById('fusionModal');
+            const title = document.getElementById('fusionModalTitle');
+            const content = document.getElementById('fusionModalContent');
+
+            title.textContent = '🔗 Fusion par Catégories';
+            content.innerHTML = `
+                <p class="text-white mb-4">Sélectionnez les catégories à fusionner :</p>
+                <div class="space-y-2 mb-4">
+                    ${categories.map(cat => `
+                        <label class="category-checkbox flex items-center space-x-2 cursor-pointer text-white">
+                            <input type="checkbox" value="${cat.name}" class="rounded">
+                            <span>${cat.emoji} ${cat.name}</span>
+                        </label>
+                    `).join('')}
+                </div>
+                <div class="flex space-x-3 justify-end">
+                    <button class="modal-btn cancel-btn" onclick="closeFusionModalFallback()">Annuler</button>
+                    <button class="modal-btn confirm-btn" onclick="closeFusionModalFallback(); handleCategoryFusionFallback()">Fusionner</button>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        // Fonction de compatibilité pour l'ancien système
+        function showFusionModalFallback(type, categories) {
+            if (type === 'global') {
+                showGlobalFusionModalFallback();
+            } else if (type === 'category') {
+                showCategoryFusionModalFallback(categories);
+            }
+        }
+
+        function closeFusionModalFallback() {
+            document.getElementById('fusionModal').classList.add('hidden');
+        }
+
+        // Fonctions fallback pour les fusions
+        window.handleGlobalFusionFallback = async function () {
+            console.log('🌐 Lancement fusion globale (fallback)...');
+            try {
+                const response = await fetch('/fusion/global', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(`✅ Fusion globale terminée: ${result.filename}`);
+                    } else {
+                        alert(`❌ Erreur: ${result.error}`);
+                    }
+                } else {
+                    alert(`❌ Erreur HTTP: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('❌ Erreur fusion globale fallback:', error);
+                alert('❌ Erreur lors de la fusion globale');
+            }
+        };
+
+        window.handleCategoryFusionFallback = async function () {
+            console.log('📂 Lancement fusion par catégories (fallback)...');
+            try {
+                // Récupérer les cases cochées
+                const checkboxes = document.querySelectorAll('#fusionModal input[type="checkbox"]:checked');
+                const selectedCategories = Array.from(checkboxes).map(cb => cb.value);
+
+                if (selectedCategories.length === 0) {
+                    alert('⚠️ Sélectionnez au moins une catégorie');
+                    return;
+                }
+
+                const response = await fetch('/fusion/category', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ categories: selectedCategories })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(`✅ Fusion par catégories terminée: ${result.filename}`);
+                    } else {
+                        alert(`❌ Erreur: ${result.error}`);
+                    }
+                } else {
+                    alert(`❌ Erreur HTTP: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('❌ Erreur fusion catégories fallback:', error);
+                alert('❌ Erreur lors de la fusion par catégories');
+            }
+        };
+
+
+        window.handleGlobalFusion = async function () {
+            console.log('🌐 Lancement fusion globale...');
+            try {
+                if (window.api && window.api.performGlobalFusion) {
+                    const result = await window.api.performGlobalFusion();
+                    if (window.ui && window.ui.showNotification) {
+                        window.ui.showNotification(`✅ Fusion globale terminée: ${result.filename}`, 'success');
+                    }
+                } else {
+                    throw new Error('API non disponible');
+                }
+            } catch (error) {
+                console.error('❌ Erreur fusion globale:', error);
+                if (window.ui && window.ui.showNotification) {
+                    window.ui.showNotification('❌ Erreur lors de la fusion globale', 'error');
+                }
+            }
+        };
+
+        window.handleCategoryFusion = async function () {
+            console.log('📂 Lancement fusion par catégories...');
+            try {
+                // Récupérer les cases cochées
+                const checkboxes = document.querySelectorAll('#fusionModal input[type="checkbox"]:checked');
+                const selectedCategories = Array.from(checkboxes).map(cb => cb.value);
+
+                if (selectedCategories.length === 0) {
+                    if (window.ui && window.ui.showNotification) {
+                        window.ui.showNotification('⚠️ Sélectionnez au moins une catégorie', 'error');
+                    }
+                    return;
+                }
+
+                if (window.api && window.api.performCategoryFusion) {
+                    const result = await window.api.performCategoryFusion(selectedCategories);
+                    if (window.ui && window.ui.showNotification) {
+                        window.ui.showNotification(`✅ Fusion par catégories terminée: ${result.filename}`, 'success');
+                    }
+                } else {
+                    throw new Error('API non disponible');
+                }
+            } catch (error) {
+                console.error('❌ Erreur fusion catégories:', error);
+                if (window.ui && window.ui.showNotification) {
+                    window.ui.showNotification('❌ Erreur lors de la fusion par catégories', 'error');
+                }
+            }
+        };
+
+        // Fonction pour ouvrir toutes les notes
+        window.openAllNotes = function () {
+            console.log('📋 Ouverture de toutes les notes...');
+            window.open('/all_notes', '_blank');
+        };
+
+        // Autres fonctions de secours
+        window.createBackup = async function () {
+            console.log('💾 Lancement backup...');
+            try {
+                const response = await fetch('/backup_project', { method: 'POST' });
+                const result = await response.json();
+                if (window.ui && window.ui.showNotification) {
+                    window.ui.showNotification(`✅ Backup créé: ${result.filename}`, 'success');
+                }
+            } catch (error) {
+                console.error('❌ Erreur backup:', error);
+                if (window.ui && window.ui.showNotification) {
+                    window.ui.showNotification('❌ Erreur lors du backup', 'error');
+                }
+            }
+        };
+
+        window.confirmDeleteCategory = async function (categoryName) {
+            console.log('🗑️ Suppression catégorie:', categoryName);
+            try {
+                const response = await fetch(`/erase_category/${categoryName}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (window.ui && window.ui.showNotification) {
+                    window.ui.showNotification(`✅ Catégorie "${categoryName}" supprimée`, 'success');
+                }
+            } catch (error) {
+                console.error('❌ Erreur suppression:', error);
+                if (window.ui && window.ui.showNotification) {
+                    window.ui.showNotification('❌ Erreur lors de la suppression', 'error');
+                }
+            }
+        };
+
+        // Fonction UI de secours pour les modales
+        window.ui.showFusionModal = function (type, categories, globalCallback, categoryCallback) {
+            const modal = document.getElementById('fusionModal');
+            const title = document.getElementById('fusionModalTitle');
+            const content = document.getElementById('fusionModalContent');
+
+            if (!modal || !title || !content) {
+                console.error('❌ Éléments de modale non trouvés');
+                return;
+            }
+
+            if (type === 'global') {
+                title.textContent = '🔗 Fusion Globale';
+                content.innerHTML = `
+                    <p class="text-white mb-4">Fusionner toutes les notes de toutes les catégories en un seul fichier ?</p>
+                    <div class="flex space-x-3 justify-end">
+                        <button class="modal-btn cancel-btn"
+                                onclick="ui.closeFusionModal()">Annuler</button>
+                        <button class="modal-btn confirm-btn"
+                                onclick="ui.closeFusionModal(); window.handleGlobalFusion()">Fusionner</button>
+                    </div>
+                `;
+            } else if (type === 'category') {
+                title.textContent = '🔗 Fusion par Catégories';
+                content.innerHTML = `
+                    <p class="text-white mb-4">Sélectionnez les catégories à fusionner :</p>
+                    <div class="space-y-2 mb-4">
+                        ${categories.map(cat => `
+                            <label class="category-checkbox flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" value="${cat.name}" class="rounded">
+                                <span style="color: ${cat.color}">${cat.emoji} ${cat.name}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="flex space-x-3 justify-end">
+                        <button class="modal-btn cancel-btn"
+                                onclick="ui.closeFusionModal()">Annuler</button>
+                        <button class="modal-btn confirm-btn"
+                                onclick="ui.closeFusionModal(); window.handleCategoryFusion()">Fusionner</button>
+                    </div>
+                `;
+            }
+
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+        };
+
+        console.log('✅ VERSION DE SECOURS - Fonctions chargées');
+        console.log('🎯 Les boutons devraient maintenant fonctionner même sans modules ES6');
+    </script>
+
+    <script type="module" src="/static/script.js"></script>
+
+    <!-- Test script for folder display fixes -->
+    <script src="/test_folder_display.js"></script>
+    <script src="/test_folder_buttons.js"></script>
+    <script src="/test_all_notes_button.js"></script>
+
+    <!-- FALLBACK FUNCTIONS - Au cas où les modules ne se chargent pas -->
+    <script>
+        // Fonctions de fallback si les modules ES6 ne fonctionnent pas
+        window.fallbackFunctions = {
+            // Les fonctions de fusion sont maintenant définies ci-dessus de manière robuste
+            // handleFusionButtonClick est défini plus haut avec fallback intégré
+
+            createBackup: function () {
+                console.log('🔄 Fallback: createBackup appelé');
+                alert('Fonction de backup non disponible. Rechargez la page.');
+            },
+
+            addNewCategory: function () {
+                console.log('🔄 Fallback: addNewCategory appelé');
+                alert('Fonction d\'ajout de catégorie non disponible. Rechargez la page.');
+            },
+
+            handleCategoryDelete: function (event, name, color, emoji) {
+                console.log('🔄 Fallback: handleCategoryDelete appelé pour', name);
+                if (confirm(`Voulez-vous vraiment supprimer la catégorie "${name}" ?`)) {
+                    alert('Suppression effectuée (simulation). Rechargez la page.');
+                }
+            },
+
+            handleFolderOpen: function (event, name) {
+                console.log('🔄 Fallback: handleFolderOpen appelé pour', name);
+                alert(`Ouverture du dossier "${name}" (simulation). Rechargez la page.`);
+            },
+
+            handleFolderDelete: function (event, name, color, emoji) {
+                console.log('🔄 Fallback: handleFolderDelete appelé pour', name);
+                if (confirm(`Voulez-vous vraiment supprimer la catégorie "${name}" ?`)) {
+                    alert('Suppression effectuée (simulation). Rechargez la page.');
+                }
+            },
+
+            handleFolderFusion: function (event, name) {
+                console.log('🔄 Fallback: handleFolderFusion appelé pour', name);
+                event.stopPropagation();
+                const fusionUrl = `/fusionner?dossier=${encodeURIComponent(name)}`;
+                window.open(fusionUrl, '_blank');
+                alert(`Fusion de la catégorie "${name}" ouverte (simulation). Rechargez la page.`);
+            },
+
+            handleFolderFusionBackend: function (event, name) {
+                console.log('🔗 Backend: handleFolderFusionBackend appelé pour', name);
+                event.stopPropagation();
+                const fusionUrl = `/fusionner_backend?dossier=${encodeURIComponent(name)}`;
+                window.open(fusionUrl, '_blank');
+                alert(`Fusion Backend de la catégorie "${name}" ouverte (simulation). Rechargez la page.`);
+            },
+
+            openAllNotes: function () {
+                console.log('🔄 Fallback: openAllNotes appelé');
+                window.open('/all_notes', '_blank');
+            },
+
+            filterFiles: function (type) {
+                console.log('🔄 Fallback: filterFiles appelé pour', type);
+                alert(`Filtrage "${type}" appliqué (simulation). Rechargez la page.`);
+            },
+
+            toggleSection: function (sectionId) {
+                console.log('🔄 Fallback: toggleSection appelé pour', sectionId);
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    const content = section.querySelector('.section-content');
+                    if (content) {
+                        content.classList.toggle('collapsed');
+                    }
+                }
+            }
+        };
+
+        // Upload Modal Functions
+        window.openUploadModal = async function () {
+            console.log('📤 Opening upload modal');
+            const modal = document.getElementById('uploadModal');
+            const categorySelect = document.getElementById('categorySelect');
+            const uploadStatus = document.getElementById('uploadStatus');
+
+            // Reset modal state
+            document.getElementById('fileInput').value = '';
+            uploadStatus.classList.add('hidden');
+            uploadStatus.textContent = '';
+
+            // Load categories
+            try {
+                const response = await fetch('/categories');
+                if (!response.ok) throw new Error('Failed to load categories');
+                const categories = await response.json();
+
+                // Populate category dropdown
+                categorySelect.innerHTML = '<option value="">-- Choisir une catégorie --</option>';
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.name;
+                    option.textContent = `${cat.emoji} ${cat.name}`;
+                    categorySelect.appendChild(option);
+                });
+
+                modal.classList.remove('hidden');
+            } catch (error) {
+                console.error('❌ Error loading categories:', error);
+                alert('Erreur lors du chargement des catégories');
+            }
+        };
+
+        window.closeUploadModal = function () {
+            console.log('📤 Closing upload modal');
+            const modal = document.getElementById('uploadModal');
+            modal.classList.add('hidden');
+        };
+
+        window.uploadFile = async function () {
+            console.log('📤 Starting file upload');
+            const fileInput = document.getElementById('fileInput');
+            const categorySelect = document.getElementById('categorySelect');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadBtn = document.getElementById('uploadConfirmBtn');
+
+            // Validation
+            if (!fileInput.files || fileInput.files.length === 0) {
+                uploadStatus.textContent = '❌ Veuillez sélectionner un fichier';
+                uploadStatus.className = 'text-sm text-center text-red-500';
+                uploadStatus.classList.remove('hidden');
+                return;
+            }
+
+            const selectedCategory = categorySelect.value;
+            if (!selectedCategory) {
+                uploadStatus.textContent = '❌ Veuillez sélectionner une catégorie';
+                uploadStatus.className = 'text-sm text-center text-red-500';
+                uploadStatus.classList.remove('hidden');
+                return;
+            }
+
+            const file = fileInput.files[0];
+
+            // Validate file size (max 50MB)
+            const maxSize = 50 * 1024 * 1024; // 50MB
+            if (file.size > maxSize) {
+                uploadStatus.textContent = '❌ Le fichier est trop volumineux (max 50MB)';
+                uploadStatus.className = 'text-sm text-center text-red-500';
+                uploadStatus.classList.remove('hidden');
+                return;
+            }
+
+            // Disable button during upload
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Téléchargement...';
+            uploadStatus.textContent = '⏳ Téléchargement en cours...';
+            uploadStatus.className = 'text-sm text-center text-blue-500';
+            uploadStatus.classList.remove('hidden');
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('category', selectedCategory);
+
+                const response = await fetch('/upload_file', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Upload failed');
+                }
+
+                const result = await response.json();
+                console.log('✅ Upload successful:', result);
+
+                uploadStatus.textContent = `✅ Fichier téléchargé avec succès: ${result.filename}`;
+                uploadStatus.className = 'text-sm text-center text-green-500';
+
+                // Show notification
+                if (window.ui && window.ui.showNotification) {
+                    window.ui.showNotification(`Fichier "${result.filename}" téléchargé dans "${selectedCategory}"`, 'success');
+                }
+
+                // Close modal after 2 seconds
+                setTimeout(() => {
+                    closeUploadModal();
+                }, 2000);
+
+            } catch (error) {
+                console.error('❌ Upload error:', error);
+                uploadStatus.textContent = `❌ Erreur: ${error.message}`;
+                uploadStatus.className = 'text-sm text-center text-red-500';
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Télécharger';
+            }
+        };
+
+        // Vérifier et appliquer les fallbacks si nécessaire
+        setTimeout(() => {
+            const requiredFunctions = [
+                'handleFusionButtonClick', 'createBackup', 'addNewCategory',
+                'handleCategoryDelete', 'handleFolderOpen', 'handleFolderDelete', 'handleFolderFusion', 'handleFolderFusionBackend',
+                'filterFiles', 'toggleSection', 'openAllNotes', 'openUploadModal', 'closeUploadModal', 'uploadFile'
+            ];
+
+            let needsFallback = false;
+            requiredFunctions.forEach(funcName => {
+                if (typeof window[funcName] !== 'function') {
+                    console.warn(`⚠️ Fonction manquante: ${funcName} - Application du fallback`);
+                    window[funcName] = window.fallbackFunctions[funcName];
+                    needsFallback = true;
+                }
+            });
+
+            if (needsFallback) {
+                console.log('🔄 Fallback functions appliquées pour les boutons manquants');
+            } else {
+                console.log('✅ Toutes les fonctions principales sont disponibles');
+            }
+        }, 1000);
+    </script>
+</body>
+
+</html>

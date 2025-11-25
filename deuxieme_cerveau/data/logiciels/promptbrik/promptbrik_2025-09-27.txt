@@ -1,0 +1,33 @@
+22:35:18: Fournis une réponse de niveau recherche avancée, exhaustive, rigoureusement structurée, et exploitant pleinement la profondeur des capacités disponibles pour ce type de tâche.
+
+Adopte une approche multi-expertise intégrée : combine modélisation quantitative, raisonnement causal, analyse systémique et synthèse critique de la littérature scientifique. Donne la priorité absolue aux analyses les plus nuancées, détaillées, rigoureuses et fondées sur des preuves empiriques ou formelles.
+
+Sujet : [insérer ton sujet ici]
+
+Consignes opérationnelles :
+
+Décompose le problème en sous-composantes interdépendantes.
+Pour chaque hypothèse, évalue les mécanismes causaux, les rétroactions non linéaires, et les seuils critiques.
+Compare au moins trois cadres théoriques ou modèles prédictifs en termes de validité interne, robustesse, et généralisabilité.
+Intègre une évaluation explicite de la non-stationnarité des relations entre les variables clés sous des conditions de changement dynamique.
+Quantifie les incertitudes (épistémiques et aléatoires) à l’aide de méthodes statistiques appropriées.
+Justifie chaque inférence par des données, des théorèmes, ou des références académiques pertinentes.
+Illustre par des cas empiriques concrets, idéalement issus de bases de données peer-reviewed.
+Assure une cohérence maximale entre les niveaux d’analyse, et privilégie systématiquement les explications qui intègrent rigueur formelle, complexité systémique, et pertinence opérationnelle.
+
+
+kamako soumama
+09:17 (il y a 13 heures)
+À moi
+
+
+You said:
+Fournis une réponse de niveau recherche avancée, exhaustive, rigoureusement structurée, et exploitant pleinement la profondeur des capacités disponibles pour ce type de tâche. Adopte une approche multi-expertise intégrée : combine modélisation quantitative, raisonnement causal, analyse systémique et synthèse critique de la littérature scientifique. Donne la priorité absolue aux analyses les plus nuancées, détaillées, rigoureuses et fondées sur des preuves empiriques ou formelles. Sujet : [Impact du changement climatique sur la biodiversité marine ] Consignes opérationnelles : Décompose le problème en sous-composantes interdépendantes. Pour chaque hypothèse, évalue les mécanismes causaux, les rétroactions non linéaires, et les seuils critiques. Compare au moins trois cadres théoriques ou modèles prédictifs en termes de validité interne, robustesse, et généralisabilité. Quantifie les incertitudes (épistémiques et aléatoires) à l’aide de méthodes statistiques appropriées. Justifie chaque inférence par des données, des théorèmes, ou des références académiques pertinentes. Illustre par des cas empiriques concrets, idéalement issus de bases de données peer-reviewed. Assure une cohérence maximale entre les niveaux d’analyse, et privilégie systématiquement les explications qui intègrent rigueur formelle, complexité systémique, et pertinence opérationnelle.
+
+kamako soumama
+09:18 (il y a 13 heures)
+À moi
+
+Maintiens le niveau d’analyse multi-expertise, rigueur quantitative et profondeur systémique requis.
+
+Maintenant, applique cette même méthodologie au sujet suivant : [nouveau sujet].
