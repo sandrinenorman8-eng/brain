@@ -1,0 +1,2542 @@
+"""
+DOCUMENT FINAL CONSOLIDÉ
+Extension Chrome + Backend Distant : Guide Complet de Déploiement Multi-Machines
+
+📑 TABLE DES MATIÈRES
+
+Introduction et Contexte
+Architecture Globale
+Phase 1 : Déploiement du Backend
+Phase 2 : Configuration de l'Extension Chrome
+Phase 3 : Sécurisation et Authentification
+Phase 4 : Installation Multi-Machines
+Phase 5 : Edge Cases et Corrections 2025
+Phase 6 : Validation et Debugging
+Pipelines et Workflows
+Checklist Finale
+Annexes Techniques
+
+
+1. INTRODUCTION ET CONTEXTE {#1-introduction}
+1.1 Mission Globale
+Rendre une extension Chrome capable de se connecter à un backend distant depuis plusieurs ordinateurs via une URL publique sécurisée (HTTPS), avec gestion complète de l'authentification, CORS, CSP et cas limites identifiés en 2025.
+1.2 Objectifs Stratégiques
+
+Accessibilité: Backend disponible publiquement en HTTPS
+Sécurité: Authentification robuste sans secrets exposés
+Portabilité: Installation facile sur machines multiples
+Maintenabilité: Configuration dynamique de l'URL backend
+Conformité: Respect des standards Manifest V3 et politiques de sécurité
+
+
+2. ARCHITECTURE GLOBALE {#2-architecture}
+2.1 Composants Principaux
+┌─────────────────┐         HTTPS          ┌──────────────────┐
+│   Extension     │◄─────────────────────►│   Backend        │
+│   Chrome        │   (fetch + auth)       │   Public         │
+│                 │                        │   (Cloud/Tunnel) │
+│ - background.js │                        │                  │
+│ - options.html  │                        │ - API Routes     │
+│ - manifest.json │                        │ - CORS Config    │
+└─────────────────┘                        └──────────────────┘
+        │
+        │ chrome.storage.sync
+        ▼
+┌─────────────────┐
+│  Configuration  │
+│  - backendUrl   │
+│  - auth tokens  │
+└─────────────────┘
+2.2 Flux de Données
+
+Utilisateur configure l'URL backend via options.html
+Extension stocke l'URL dans chrome.storage.sync
+Service worker (background.js) récupère l'URL et établit connexions
+Authentification OAuth via chrome.identity
+Tokens stockés dans chrome.storage.local
+Requêtes API signées avec tokens JWT
+
+
+3. PHASE 1 : DÉPLOIEMENT DU BACKEND {#3-phase1}
+3.1 Choix de la Stratégie de Déploiement
+Option A : Déploiement Cloud (PRODUCTION RECOMMANDÉE)
+Plateformes PaaS Supportées:
+
+Vercel (Node.js, Edge Functions)
+Render (Docker, Node.js, Python)
+Railway (Full-stack, databases incluses)
+Google App Engine (scalabilité enterprise)
+Netlify Functions (serverless)
+
+Critères de Sélection:
+PlateformeGratuitAuto-HTTPSScalingDB IntégréeVercel✅✅✅❌Render✅✅✅✅Railway⚠️✅✅✅GAE⚠️✅✅✅✅
+Option B : Tunneling (DÉVELOPPEMENT UNIQUEMENT)
+Outils de Tunneling:
+
+ngrok: ngrok http 3000 → URL: https://abc123.ngrok-free.app
+Cloudflare Tunnel: Configuration permanente possible
+LocalTunnel: Alternative open-source
+
+⚠️ ATTENTION: URLs volatiles, à éviter en production
+3.2 Procédure de Déploiement Cloud (Vercel)
+Étape 1.1 : Préparation du Projet
+bash# Installer Vercel CLI
+npm i -g vercel
+
+# Se connecter
+vercel login
+
+# Initialiser le projet
+cd /path/to/backend
+vercel init
+Étape 1.2 : Configuration
+json// vercel.json
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "index.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "JWT_SECRET": "@jwt-secret"
+  }
+}
+Étape 1.3 : Déploiement
+bash# Déployer en production
+vercel --prod
+
+# Récupérer l'URL déployée
+# Exemple: https://my-backend-xyz.vercel.app
+Étape 1.4 : Variables d'Environnement
+bash# Ajouter secrets via CLI
+vercel secrets add jwt-secret "votre-secret-ici"
+vercel secrets add database-url "postgresql://..."
+3.3 Configuration CORS Backend
+Implémentation Node.js/Express:
+javascriptconst express = require('express');
+const cors = require('cors');
+const app = express();
+
+// Configuration CORS pour Extension Chrome
+const corsOptions = {
+  origin: [
+    'chrome-extension://*', // Accepter toutes extensions (dev)
+    /^chrome-extension:\/\/[a-z]{32}$/ // Pattern ID extension
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['X-Total-Count'],
+  maxAge: 86400 // 24h cache préflight
+};
+
+app.use(cors(corsOptions));
+
+// CRITIQUE: Empêcher cache CDN des préflights
+app.options('*', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.sendStatus(204);
+});
+
+// Route de santé
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: Date.now() });
+});
+
+app.listen(process.env.PORT || 3000);
+3.4 Validation de l'Accessibilité
+Test Endpoint avec curl:
+bash# Vérifier HTTPS et headers
+curl -I https://your-backend.vercel.app/api/health
+
+# Réponse attendue:
+# HTTP/2 200
+# access-control-allow-origin: chrome-extension://*
+# content-type: application/json
+```
+
+---
+
+## 4. PHASE 2 : CONFIGURATION DE L'EXTENSION CHROME {#4-phase2}
+
+### 4.1 Structure des Fichiers
+```
+extension/
+├── manifest.json          # Configuration principale
+├── background.js          # Service worker
+├── options.html           # Page de configuration
+├── options.js             # Logique configuration
+├── popup.html             # Interface popup (optionnel)
+├── popup.js               # Logique popup
+└── icons/
+    ├── icon16.png
+    ├── icon48.png
+    └── icon128.png
+4.2 Configuration manifest.json (Manifest V3)
+json{
+  "manifest_version": 3,
+  "name": "Extension Multi-Backend",
+  "version": "1.0.0",
+  "description": "Extension connectée à backend distant configurable",
+  
+  "permissions": [
+    "storage",
+    "identity"
+  ],
+  
+  "host_permissions": [
+    "https://your-backend.vercel.app/*",
+    "https://*.ngrok-free.app/*",
+    "https://*.render.com/*",
+    "https://*.railway.app/*"
+  ],
+  
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://your-backend.vercel.app https://*.ngrok-free.app https://*.render.com https://*.railway.app;"
+  },
+  
+  "oauth2": {
+    "client_id": "YOUR_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": ["openid", "email", "profile"]
+  },
+  
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
+4.3 Implémentation Service Worker (background.js)
+javascript// background.js - Service Worker
+const DEFAULT_BACKEND_URL = 'https://your-backend.vercel.app';
+
+// Fonction utilitaire: récupérer URL backend
+async function getBackendUrl() {
+  const { backendUrl } = await chrome.storage.sync.get('backendUrl');
+  return backendUrl || DEFAULT_BACKEND_URL;
+}
+
+// Fonction utilitaire: récupérer token auth
+async function getAuthToken() {
+  const { authToken } = await chrome.storage.local.get('authToken');
+  return authToken;
+}
+
+// Fonction principale: appel API backend
+async function callBackend(endpoint, options = {}) {
+  const baseUrl = await getBackendUrl();
+  const token = await getAuthToken();
+  
+  const url = `${baseUrl}${endpoint}`;
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Backend call failed:', error);
+    
+    // Retry logic avec exponential backoff
+    if (options.retry > 0) {
+      await new Promise(resolve => setTimeout(resolve, 1000 * (4 - options.retry)));
+      return callBackend(endpoint, { ...options, retry: options.retry - 1 });
+    }
+    
+    throw error;
+  }
+}
+
+// Listener messages depuis popup/content scripts
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'apiCall') {
+    callBackend(message.endpoint, { 
+      method: message.method || 'GET',
+      body: message.body ? JSON.stringify(message.body) : undefined,
+      retry: 3
+    })
+      .then(data => sendResponse({ success: true, data }))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    
+    return true; // Indique réponse asynchrone
+  }
+});
+
+// Installation: vérifier configuration
+chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+  if (reason === 'install') {
+    // Ouvrir page options au premier lancement
+    chrome.runtime.openOptionsPage();
+  }
+  
+  // Vérifier santé backend
+  try {
+    const health = await callBackend('/api/health', { retry: 1 });
+    console.log('Backend health check:', health);
+  } catch (error) {
+    console.warn('Backend unreachable at startup:', error);
+  }
+});
+4.4 Page de Configuration (options.html)
+html<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Extension Configuration</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .config-section {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button {
+      background: #4285f4;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #357ae8;
+    }
+    .status {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚙️ Configuration Extension</h1>
+  
+  <div class="config-section">
+    <h2>Backend URL</h2>
+    <label for="backendUrl">URL du Backend (HTTPS uniquement):</label>
+    <input 
+      type="text" 
+      id="backendUrl" 
+      placeholder="https://your-backend.vercel.app"
+      pattern="https://.*"
+    >
+    <button id="saveUrl">Enregistrer l'URL</button>
+    <button id="testConnection">Tester la Connexion</button>
+    <div id="urlStatus" class="status"></div>
+  </div>
+  
+  <div class="config-section">
+    <h2>Authentification</h2>
+    <button id="loginBtn">Se Connecter (OAuth)</button>
+    <button id="logoutBtn">Se Déconnecter</button>
+    <div id="authStatus" class="status"></div>
+  </div>
+  
+  <script src="options.js"></script>
+</body>
+</html>
+4.5 Logique Configuration (options.js)
+javascript// options.js
+document.addEventListener('DOMContentLoaded', async () => {
+  const backendUrlInput = document.getElementById('backendUrl');
+  const saveUrlBtn = document.getElementById('saveUrl');
+  const testConnectionBtn = document.getElementById('testConnection');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const urlStatus = document.getElementById('urlStatus');
+  const authStatus = document.getElementById('authStatus');
+  
+  // Charger URL sauvegardée
+  const { backendUrl } = await chrome.storage.sync.get('backendUrl');
+  if (backendUrl) {
+    backendUrlInput.value = backendUrl;
+  }
+  
+  // Sauvegarder URL
+  saveUrlBtn.addEventListener('click', async () => {
+    const url = backendUrlInput.value.trim();
+    
+    // Validation
+    if (!url.startsWith('https://')) {
+      showStatus(urlStatus, 'Seules les URLs HTTPS sont autorisées', 'error');
+      return;
+    }
+    
+    try {
+      new URL(url); // Vérifier format URL
+      await chrome.storage.sync.set({ backendUrl: url });
+      showStatus(urlStatus, 'URL enregistrée avec succès', 'success');
+      
+      // Recharger service worker pour appliquer changements
+      chrome.runtime.reload();
+    } catch (error) {
+      showStatus(urlStatus, `URL invalide: ${error.message}`, 'error');
+    }
+  });
+  
+  // Tester connexion
+  testConnectionBtn.addEventListener('click', async () => {
+    const url = backendUrlInput.value.trim();
+    
+    try {
+      const response = await fetch(`${url}/api/health`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        showStatus(urlStatus, `✅ Backend accessible: ${data.status}`, 'success');
+      } else {
+        showStatus(urlStatus, `❌ Erreur HTTP ${response.status}`, 'error');
+      }
+    } catch (error) {
+      showStatus(urlStatus, `❌ Connexion impossible: ${error.message}`, 'error');
+    }
+  });
+  
+  // Authentification OAuth
+  loginBtn.addEventListener('click', async () => {
+    try {
+      const token = await authenticateWithOAuth();
+      await chrome.storage.local.set({ authToken: token });
+      showStatus(authStatus, '✅ Authentification réussie', 'success');
+    } catch (error) {
+      showStatus(authStatus, `❌ Échec auth: ${error.message}`, 'error');
+    }
+  });
+  
+  // Déconnexion
+  logoutBtn.addEventListener('click', async () => {
+    await chrome.storage.local.remove('authToken');
+    showStatus(authStatus, 'Déconnecté', 'success');
+  });
+});
+
+// Fonction utilitaire: afficher message status
+function showStatus(element, message, type) {
+  element.textContent = message;
+  element.className = `status ${type}`;
+  element.style.display = 'block';
+  
+  setTimeout(() => {
+    element.style.display = 'none';
+  }, 5000);
+}
+
+// Fonction OAuth (voir section 5 pour implémentation complète)
+async function authenticateWithOAuth() {
+  // Implémentation dans section Authentification
+  throw new Error('À implémenter');
+}
+
+5. PHASE 3 : SÉCURISATION ET AUTHENTIFICATION {#5-phase3}
+5.1 Principes de Sécurité Fondamentaux
+❌ INTERDICTIONS ABSOLUES:
+
+Jamais de secrets/API keys en dur dans le code
+Jamais de tokens dans chrome.storage.sync (visible multi-devices)
+Jamais d'URLs HTTP (non-chiffrées) en production
+
+✅ BONNES PRATIQUES:
+
+Tokens JWT courts (exp: 1h) avec refresh tokens
+Stockage chrome.storage.local pour données sensibles
+Headers Authorization: Bearer <token> pour authentification
+Rotation automatique des tokens
+
+5.2 Implémentation OAuth avec chrome.identity
+Configuration OAuth (Google):
+
+Créer projet sur Google Cloud Console
+Activer API "Google+ API"
+Créer OAuth 2.0 Client ID
+
+Type: Chrome Extension
+Authorized redirect URIs: https://<extension-id>.chromiumapp.org/
+
+
+
+Code Authentification (options.js - complété):
+javascript// Fonction OAuth complète
+async function authenticateWithOAuth() {
+  return new Promise((resolve, reject) => {
+    chrome.identity.getAuthToken({ interactive: true }, async (token) => {
+      if (chrome.runtime.lastError) {
+        return reject(new Error(chrome.runtime.lastError.message));
+      }
+      
+      if (!token) {
+        return reject(new Error('No token received'));
+      }
+      
+      try {
+        // Échanger token Google contre token backend
+        const backendUrl = await getBackendUrl();
+        const response = await fetch(`${backendUrl}/api/auth/google`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ googleToken: token })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Auth failed: ${response.status}`);
+        }
+        
+        const { jwtToken, refreshToken } = await response.json();
+        
+        // Stocker tokens
+        await chrome.storage.local.set({
+          authToken: jwtToken,
+          refreshToken: refreshToken,
+          tokenExpiry: Date.now() + 3600000 // 1h
+        });
+        
+        resolve(jwtToken);
+      } catch (error) {
+        // Nettoyer token Google en cas d'échec
+        chrome.identity.removeCachedAuthToken({ token }, () => {});
+        reject(error);
+      }
+    });
+  });
+}
+
+// Fonction: récupérer token (avec refresh automatique)
+async function getAuthToken() {
+  const { authToken, refreshToken, tokenExpiry } = await chrome.storage.local.get([
+    'authToken',
+    'refreshToken',
+    'tokenExpiry'
+  ]);
+  
+  // Token encore valide
+  if (authToken && Date.now() < tokenExpiry - 60000) { // 1min marge
+    return authToken;
+  }
+  
+  // Refresh nécessaire
+  if (refreshToken) {
+    try {
+      const backendUrl = await getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken })
+      });
+      
+      if (response.ok) {
+        const { jwtToken, newRefreshToken } = await response.json();
+        
+        await chrome.storage.local.set({
+          authToken: jwtToken,
+          refreshToken: newRefreshToken || refreshToken,
+          tokenExpiry: Date.now() + 3600000
+        });
+        
+        return jwtToken;
+      }
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+    }
+  }
+  
+  // Forcer ré-authentification
+  throw new Error('AUTH_REQUIRED');
+}
+5.3 Backend: Validation JWT
+Implémentation Node.js/Express:
+javascriptconst jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const REFRESH_SECRET = process.env.REFRESH_SECRET;
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// Middleware: vérifier JWT
+function authenticateJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+  
+  const token = authHeader.substring(7);
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).json({ error: 'Invalid token' });
+  }
+}
+
+// Route: échange token Google
+app.post('/api/auth/google', async (req, res) => {
+  const { googleToken } = req.body;
+  
+  try {
+    // Vérifier token Google
+    const ticket = await googleClient.verifyIdToken({
+      idToken: googleToken,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+    
+    const payload = ticket.getPayload();
+    const userId = payload.sub;
+    const email = payload.email;
+    
+    // Créer JWT backend
+    const jwtToken = jwt.sign(
+      { userId, email },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    
+    const refreshToken = jwt.sign(
+      { userId, type: 'refresh' },
+      REFRESH_SECRET,
+      { expiresIn: '7d' }
+    );
+    
+    res.json({ jwtToken, refreshToken });
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid Google token' });
+  }
+});
+
+// Route: refresh token
+app.post('/api/auth/refresh', async (req, res) => {
+  const { refreshToken } = req.body;
+  
+  try {
+    const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
+    
+    if (decoded.type !== 'refresh') {
+      throw new Error('Invalid token type');
+    }
+    
+    const jwtToken = jwt.sign(
+      { userId: decoded.userId },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    
+    res.json({ jwtToken });
+  } catch (error) {
+    res.status(403).json({ error: 'Invalid refresh token' });
+  }
+});
+
+// Route protégée exemple
+app.get('/api/user/profile', authenticateJWT, (req, res) => {
+  res.json({
+    userId: req.user.userId,
+    email: req.user.email
+  });
+});
+5.4 Content Security Policy (CSP) - Configuration Avancée
+Problèmes Fréquents:
+
+Typos dans connect-src bloquent silencieusement requêtes
+Incohérence entre extension_pages et content_scripts
+Oubli de domaines backend dans whitelist
+
+Configuration Complète manifest.json:
+json{
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://your-backend.vercel.app https://*.ngrok-free.app https://*.render.com https://*.railway.app https://accounts.google.com https://oauth2.googleapis.com;",
+    "content_scripts": "script-src 'self'; object-src 'self';"
+  }
+}
+Points Critiques:
+
+Chaque domaine backend doit apparaître dans connect-src
+Inclure domaines OAuth (Google, etc.)
+Pas d'espaces après points-virgules
+Tester avec Console DevTools → violations CSP visibles
+
+
+6. PHASE 4 : INSTALLATION MULTI-MACHINES {#6-phase4}
+6.1 Méthode A : Publication Chrome Web Store (PRODUCTION)
+Avantages:
+✅ Installation automatique sur tous appareils (sync)
+✅ Mises à jour automatiques
+✅ ID extension fixe
+✅ Distribution scalable
+Procédure Complète:
+Étape 4.1.1 : Préparation du Package
+bash# Créer archive ZIP
+cd extension/
+zip -r ../extension-v1.0.0.zip . -x "*.git*" -x "node_modules/*"
+Fichiers Obligatoires:
+
+manifest.json ✅
+Icônes: 16x16, 48x48, 128x128 ✅
+Screenshots (1280x800 ou 640x400) ✅
+Description détaillée ✅
+Politique de confidentialité URL ✅
+
+Étape 4.1.2 : Inscription Chrome Web Store
+
+Accéder: https://chrome.google.com/webstore/devconsole
+Payer frais inscription: $5 (unique)
+Créer nouveau produit
+
+Étape 4.1.3 : Compléter Informations
+yamlNom: Extension Multi-Backend
+Description courte: Connecte Chrome à votre backend personnel sécurisé
+Description détaillée: |
+  Cette extension permet de connecter votre navigateur à un backend
+  personnel hébergé en cloud. Fonctionnalités:
+  - Configuration URL backend dynamique
+  - Authentification OAuth sécurisée
+  - Synchronisation multi-appareils
+  - Conforme Manifest V3
+
+Catégorie: Développeur/Productivité
+Langue: Français
+Icône: icon128.png
+
+Screenshots: (4 minimum)
+  - Configuration page
+  - Authentication flow
+  - Popup interface
+  - Settings panel
+
+Politique confidentialité: https://your-domain.com/privacy
+```
+
+**Étape 4.1.4 : Upload et Soumission**
+```
+1. Upload ZIP
+2. Validation automatique (24-72h)
+3. Corrections si rejet
+4. Approbation finale
+Étape 4.1.5 : Réservation ID Extension
+Pour éviter changements d'ID:
+json// manifest.json
+{
+  "key": "VOTRE_CLE_PUBLIQUE_BASE64_ICI"
+}
+Générer avec:
+bash# Chrome génère paire clés lors première publication
+# Télécharger fichier .pem depuis Dashboard
+# Convertir en clé publique:
+openssl rsa -in key.pem -pubout -outform DER | base64 -w 0
+```
+
+### 6.2 Méthode B : Installation Manuelle (DÉVELOPPEMENT/TEST)
+
+**Étape 4.2.1 : Empaqueter Extension**
+
+**Option 1: Load Unpacked (recommandé développement)**
+```
+1. Ouvrir chrome://extensions
+2. Activer "Developer mode" (toggle en haut-droite)
+3. Cliquer "Load unpacked"
+4. Sélectionner dossier extension/
+```
+
+**Option 2: Package .crx**
+```
+1. chrome://extensions
+2. "Pack extension"
+3. Extension root directory: /path/to/extension
+4. Private key: laisser vide (première fois)
+5. Génère: extension.crx + extension.pem
+Étape 4.2.2 : Transfert vers Autre Machine
+Via Cloud Storage:
+bash# Upload vers Google Drive, Dropbox, etc.
+# Ou utiliser Git:
+git clone https://github.com/user/extension.git
+cd extension
+# Charger dans Chrome
+Via Réseau Local:
+bash# Machine source
+python3 -m http.server 8000
+
+# Machine cible
+wget http://192.168.1.X:8000/extension.crx
+# Glisser-déposer dans chrome://extensions
+Étape 4.2.3 : Installation sur Machine Cible
+1. Ouvrir chrome://extensionsRetryPContinue
+Activer "Developer mode"
+Glisser-déposer fichier .crx DANS la page
+OU cliquer "Load unpacked" et sélectionner dossier
+Accepter permissions
+Vérifier icône extension dans toolbar
+
+
+**Étape 4.2.4 : Configuration Post-Installation**
+
+Clic-droit sur icône extension → Options
+Saisir URL backend HTTPS
+Cliquer "Enregistrer l'URL"
+Tester connexion
+Se connecter (OAuth)
+
+
+### 6.3 Synchronisation Chrome (Auto-sync)
+
+**Activation Sync:**
+
+Paramètres Chrome → Connexion
+Se connecter avec compte Google
+Activer "Synchronisation"
+Cocher "Extensions"
+
+
+**Comportement:**
+- Extensions installées depuis Web Store → sync automatique
+- Extensions chargées manuellement → PAS de sync (rester en local)
+- Paramètres `chrome.storage.sync` → sync entre appareils
+- Paramètres `chrome.storage.local` → local uniquement
+
+**⚠️ ATTENTION:**
+```javascript
+// ❌ NE PAS stocker dans sync:
+chrome.storage.sync.set({ authToken: 'secret' }); // DANGEREUX!
+
+// ✅ Stocker dans local:
+chrome.storage.local.set({ authToken: 'secret' }); // CORRECT
+```
+
+### 6.4 Validation Multi-Machines
+
+**Checklist Validation:**
+☐ Machine 1: Extension installée et configurée
+☐ Machine 2: Extension installée via même méthode
+☐ URL backend identique sur les deux machines
+☐ Authentification réussie sur les deux
+☐ Appels API fonctionnels depuis les deux
+☐ Aucune erreur CORS/CSP dans consoles
+☐ chrome.storage.sync: backendUrl synchronisé (si Web Store)
+☐ chrome.storage.local: tokens séparés (sécurité)
+
+---
+
+## 7. PHASE 5 : EDGE CASES ET CORRECTIONS 2025 {#7-phase5}
+
+### 7.1 Problème: URLs de Tunnel Dynamiques
+
+**Symptôme:**
+Extension garde en cache ancien hostname ngrok après redémarrage tunnel
+Requêtes fetch échouent avec ERR_NAME_NOT_RESOLVED
+
+**Cause:**
+Service worker Chrome met en cache résolutions DNS et connexions
+
+**Solution 1: Rechargement Extension Forcé**
+```javascript
+// options.js - après changement URL
+saveUrlBtn.addEventListener('click', async () => {
+  const newUrl = backendUrlInput.value.trim();
+  await chrome.storage.sync.set({ backendUrl: newUrl });
+  
+  // CRITIQUE: Forcer reload service worker
+  chrome.runtime.reload();
+});
+```
+
+**Solution 2: Patterns Permissions Larges**
+```json
+// manifest.json - accepter tous sous-domaines ngrok
+{
+  "host_permissions": [
+    "https://*.ngrok-free.app/*",
+    "https://*.ngrok.io/*",
+    "https://*.ngrok.app/*"
+  ]
+}
+```
+
+**Solution 3: Détection Changement URL**
+```javascript
+// background.js - listener changements storage
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync' && changes.backendUrl) {
+    console.log('Backend URL changed:', changes.backendUrl.newValue);
+    
+    // Invalider cache connexions
+    chrome.webRequest.handlerBehaviorChanged(() => {
+      console.log('Cache cleared');
+    });
+  }
+});
+```
+
+### 7.2 Problème: ID Extension Changeant
+
+**Symptôme:**
+Extension re-signée par Web Store a nouvel ID
+Backend whitelist CORS obsolète
+chrome-extension://OLD_ID → chrome-extension://NEW_ID
+
+**Cause:**
+Chrome Web Store peut re-signer extension lors mises à jour si clé privée non fournie
+
+**Solution: Réservation ID Permanent**
+
+**Étape 7.2.1 : Générer Paire Clés**
+```bash
+# Lors première publication, Chrome génère:
+# - Fichier .pem (clé privée) - À CONSERVER PRÉCIEUSEMENT
+# - ID extension dérivé de clé publique
+
+# Télécharger .pem depuis Dashboard après première publication
+```
+
+**Étape 7.2.2 : Extraire Clé Publique**
+```bash
+# Convertir .pem en clé publique pour manifest
+openssl rsa -in extension-key.pem -pubout -outform DER | base64 -w 0
+
+# Copier output (commence par "MII...")
+```
+
+**Étape 7.2.3 : Ajouter au Manifest**
+```json
+{
+  "manifest_version": 3,
+  "name": "Extension Multi-Backend",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...", // Clé publique complète
+  ...
+}
+```
+
+**Avantages:**
+✅ ID extension fixe: `abcdefghijklmnopqrstuvwxyzabcdef`  
+✅ Pas de re-signature par Web Store  
+✅ CORS backend stable  
+✅ OAuth redirect URIs permanents  
+
+**⚠️ SÉCURITÉ:**
+
+Clé privée (.pem): SAUVEGARDER hors repo Git
+Ne JAMAIS commit .pem
+Stocker dans gestionnaire secrets (1Password, Vault)
+
+
+### 7.3 Problème: Cache CDN des Préflights CORS
+
+**Symptôme:**
+Modifications CORS backend ne s'appliquent pas
+OPTIONS requests retournent anciennes réponses
+Extension bloquée par erreur CORS malgré config correcte
+
+**Cause:**
+CloudFront, Cloudflare, Fastly mettent en cache réponses OPTIONS (préflight)
+
+**Solution Backend:**
+```javascript
+// Express middleware CORS amélioré
+app.use((req, res, next) => {
+  res.set('Access-Control-Allow-Origin', req.get('origin') || '*');
+  res.set('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  res.set('Access-Control-Allow-Credentials', 'true');
+  res.set('Access-Control-Max-Age', '86400'); // Cache navigateur: 24h
+  
+  // CRITIQUE: Empêcher cache CDN
+  if (req.method === 'OPTIONS') {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.set('Surrogate-Control', 'no-store');
+    return res.sendStatus(204);
+  }
+  
+  next();
+});
+```
+
+**Solution CDN (CloudFront):**
+```yaml
+# CloudFront Behavior Settings
+Cache Policy:
+  Query Strings: All
+  Headers: 
+    - Origin
+    - Access-Control-Request-Method
+    - Access-Control-Request-Headers
+  Cookies: None
+  
+Cache Key Settings:
+  Override for OPTIONS:
+    TTL: 0 seconds
+    Cache-Control: Respect origin headers
+```
+
+**Solution CDN (Cloudflare):**
+```javascript
+// Cloudflare Worker - bypass cache pour OPTIONS
+addEventListener('fetch', event => {
+  const request = event.request;
+  
+  if (request.method === 'OPTIONS') {
+    // Bypass cache Cloudflare
+    event.respondWith(fetch(request, { cf: { cacheTtl: 0 } }));
+  } else {
+    event.respondWith(fetch(request));
+  }
+});
+```
+
+**Validation:**
+```bash
+# Vérifier headers CORS et cache
+curl -I -X OPTIONS \
+  -H "Origin: chrome-extension://abcd1234" \
+  -H "Access-Control-Request-Method: POST" \
+  https://your-backend.vercel.app/api/endpoint
+
+# Réponse attendue:
+# HTTP/2 204
+# access-control-allow-origin: chrome-extension://abcd1234
+# cache-control: no-store
+# ❌ PAS DE: cf-cache-status: HIT
+```
+
+### 7.4 Problème: Erreurs CSP Silencieuses
+
+**Symptôme:**
+Requêtes fetch échouent sans erreur explicite
+Console Chrome: violations CSP ignorées
+Network tab: requêtes marquées "(blocked:csp)"
+
+**Cause:**
+Typos ou incohérences dans `content_security_policy`
+
+**Erreurs Fréquentes:**
+```json
+// ❌ INCORRECT - Espace après point-virgule
+{
+  "content_security_policy": {
+    "extension_pages": "connect-src 'self' https://backend.com; "
+    // Espace final invalide ^
+  }
+}
+
+// ❌ INCORRECT - Directive manquante
+{
+  "content_security_policy": {
+    "extension_pages": "script-src 'self';" 
+    // Manque: object-src, connect-src
+  }
+}
+
+// ❌ INCORRECT - URL sans protocole
+{
+  "content_security_policy": {
+    "extension_pages": "connect-src 'self' backend.com;"
+    // Doit être: https://backend.com
+  }
+}
+
+// ❌ INCORRECT - Incohérence extension_pages vs content_scripts
+{
+  "content_security_policy": {
+    "extension_pages": "connect-src 'self' https://api1.com;",
+    "content_scripts": "connect-src 'self' https://api2.com;"
+    // Différentes APIs, risque de bugs
+  }
+}
+```
+
+**✅ Configuration Correcte:**
+```json
+{
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://your-backend.vercel.app https://*.ngrok-free.app https://accounts.google.com;",
+    "content_scripts": "script-src 'self'; object-src 'self';"
+  }
+}
+```
+
+**Validation CSP:**
+```javascript
+// Test script dans background.js
+console.log('Testing CSP compliance...');
+
+// Test 1: Fetch autorisé
+fetch('https://your-backend.vercel.app/api/health')
+  .then(r => console.log('✅ Backend fetch OK'))
+  .catch(e => console.error('❌ Backend fetch blocked:', e));
+
+// Test 2: Fetch non-autorisé (doit échouer)
+fetch('https://unauthorized-domain.com/api')
+  .then(r => console.warn('⚠️ Unauthorized fetch succeeded - CSP too permissive'))
+  .catch(e => console.log('✅ Unauthorized fetch correctly blocked'));
+
+// Test 3: OAuth domain
+fetch('https://accounts.google.com')
+  .then(r => console.log('✅ OAuth domain accessible'))
+  .catch(e => console.error('❌ OAuth domain blocked:', e));
+```
+
+**Debugging CSP:**
+
+Ouvrir DevTools → Console
+Filtrer: "csp"
+Chercher: "Refused to connect to"
+Identifier domaine bloqué
+Ajouter à connect-src
+Recharger extension
+
+
+### 7.5 Problème: Service Worker Crashes
+
+**Symptôme:**
+Extension cesse de répondre après quelques minutes
+Background script ne traite plus messages
+chrome.runtime.sendMessage timeout
+
+**Cause:**
+Service workers Chrome ont cycle de vie strict (inactif après 30s sans événement)
+
+**Solution: Keep-Alive Pattern**
+```javascript
+// background.js - maintenir service worker actif
+let keepAliveInterval;
+
+function startKeepAlive() {
+  // Ping toutes les 20 secondes
+  keepAliveInterval = setInterval(() => {
+    chrome.runtime.getPlatformInfo(() => {
+      // Vide - juste pour maintenir worker actif
+    });
+  }, 20000);
+}
+
+function stopKeepAlive() {
+  if (keepAliveInterval) {
+    clearInterval(keepAliveInterval);
+  }
+}
+
+// Démarrer au chargement
+startKeepAlive();
+
+// Gérer extinction navigateur
+chrome.runtime.onSuspend.addListener(() => {
+  stopKeepAlive();
+  console.log('Service worker suspending...');
+});
+
+// Re-démarrer au réveil
+chrome.runtime.onStartup.addListener(() => {
+  startKeepAlive();
+  console.log('Service worker restarted');
+});
+```
+
+**Alternative: Alarms API**
+```javascript
+// Utiliser chrome.alarms (persiste après suspension)
+chrome.alarms.create('keepAlive', { 
+  periodInMinutes: 0.5 // 30 secondes
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'keepAlive') {
+    // Vérifier santé backend
+    checkBackendHealth().catch(console.error);
+  }
+});
+```
+
+### 7.6 Problème: Rate Limiting Backend
+
+**Symptôme:**
+Certaines requêtes retournent 429 Too Many Requests
+Extension semble "lente" ou non-responsive
+Pas de retry automatique
+
+**Solution: Exponential Backoff avec Retry**
+```javascript
+// background.js - fonction fetch améliorée
+async function callBackendWithRetry(endpoint, options = {}, attempt = 1) {
+  const maxAttempts = 5;
+  const baseDelay = 1000; // 1 seconde
+  
+  try {
+    const baseUrl = await getBackendUrl();
+    const token = await getAuthToken();
+    
+    const response = await fetch(`${baseUrl}${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...options.headers
+      }
+    });
+    
+    // Success
+    if (response.ok) {
+      return await response.json();
+    }
+    
+    // Rate limited - retry avec backoff
+    if (response.status === 429 && attempt < maxAttempts) {
+      const retryAfter = response.headers.get('Retry-After');
+      const delay = retryAfter 
+        ? parseInt(retryAfter) * 1000 
+        : baseDelay * Math.pow(2, attempt - 1); // Exponential backoff
+      
+      console.log(`Rate limited. Retrying in ${delay}ms (attempt ${attempt}/${maxAttempts})`);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return callBackendWithRetry(endpoint, options, attempt + 1);
+    }
+    
+    // Auth error - forcer re-login
+    if (response.status === 401 || response.status === 403) {
+      await chrome.storage.local.remove(['authToken', 'refreshToken']);
+      throw new Error('AUTH_REQUIRED');
+    }
+    
+    // Autre erreur
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    
+  } catch (error) {
+    // Network error - retry
+    if (error.name === 'TypeError' && attempt < maxAttempts) {
+      const delay = baseDelay * Math.pow(2, attempt - 1);
+      console.log(`Network error. Retrying in ${delay}ms`);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return callBackendWithRetry(endpoint, options, attempt + 1);
+    }
+    
+    throw error;
+  }
+}
+```
+
+**Backend: Implémenter Rate Limiting**
+```javascript
+const rateLimit = require('express-rate-limit');
+
+// Configuration rate limiter
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Max 100 requêtes par fenêtre
+  standardHeaders: true, // Retourner info dans headers
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      error: 'Too many requests',
+      retryAfter: Math.ceil(req.rateLimit.resetTime / 1000)
+    });
+  }
+});
+
+// Appliquer à toutes routes API
+app.use('/api/', apiLimiter);
+
+// Rate limit spécifique pour auth (plus strict)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: true
+});
+
+app.use('/api/auth/', authLimiter);
+```
+
+---
+
+## 8. PHASE 6 : VALIDATION ET DEBUGGING {#8-phase6}
+
+### 8.1 Checklist de Diagnostic Complète
+
+**☐ Backend Accessibility**
+```bash
+# Test 1: Endpoint santé
+curl -I https://your-backend.vercel.app/api/health
+# Attendu: HTTP/2 200
+
+# Test 2: Headers CORS
+curl -I -H "Origin: chrome-extension://abcd1234" \
+  https://your-backend.vercel.app/api/health
+# Attendu: access-control-allow-origin présent
+
+# Test 3: Authentification
+curl -X POST https://your-backend.vercel.app/api/auth/google \
+  -H "Content-Type: application/json" \
+  -d '{"googleToken":"test"}'
+# Attendu: HTTP 401 (normal sans vrai token)
+```
+
+**☐ Extension Configuration**
+```javascript
+// Console extension (chrome://extensions → Inspect views)
+chrome.storage.sync.get(['backendUrl'], (data) => {
+  console.log('Configured backend:', data.backendUrl);
+});
+
+chrome.storage.local.get(['authToken', 'tokenExpiry'], (data) => {
+  console.log('Auth token:', data.authToken ? 'Present' : 'Missing');
+  console.log('Token expiry:', new Date(data.tokenExpiry));
+});
+```
+
+**☐ Permissions Manifest**
+```json
+// Vérifier dans chrome://extensions
+{
+  "host_permissions": [
+    "https://your-actual-backend-domain.com/*" // ✅ Correspond à URL réelle
+  ]
+}
+```
+
+**☐ CSP Compliance**
+```javascript
+// Test dans background.js DevTools
+fetch('https://your-backend.vercel.app/api/test')
+  .then(r => r.json())
+  .then(d => console.log('✅ CSP allows fetch:', d))
+  .catch(e => console.error('❌ CSP blocks fetch:', e));
+```
+
+**☐ Network Analysis**
+
+Ouvrir DevTools → Network
+Filtrer: "api"
+Déclencher action extension
+Vérifier:
+
+Status codes (200, 401, etc.)
+Request headers (Authorization présent?)
+Response headers (CORS présent?)
+Timing (latence réseau)
+
+
+
+
+**☐ Console Errors**
+
+Extension console: chrome://extensions → background page
+Popup console: Inspect popup
+Options console: Inspect options page
+Chercher:
+
+CSP violations
+CORS errors
+Auth failures
+Network timeouts
+
+
+
+
+### 8.2 Debugging Avancé
+
+**Scenario 1: "Extension ne répond pas"**
+```javascript
+// Ajouter logging détaillé background.js
+const DEBUG = true;
+
+function log(...args) {
+  if (DEBUG) {
+    console.log('[DEBUG]', new Date().toISOString(), ...args);
+  }
+}
+
+// Wrapper fetch avec logs
+async function debugFetch(url, options) {
+  log('Fetch started:', url, options);
+  
+  try {
+    const start = performance.now();
+    const response = await fetch(url, options);
+    const duration = performance.now() - start;
+    
+    log('Fetch completed:', {
+      url,
+      status: response.status,
+      duration: `${duration.toFixed(2)}ms`,
+      headers: Object.fromEntries(response.headers)
+    });
+    
+    return response;
+  } catch (error) {
+    log('Fetch failed:', url, error);
+    throw error;
+  }
+}
+```
+
+**Scenario 2: "CORS errors persistants"**
+```javascript
+// Test CORS depuis extension
+async function diagnoseCORS() {
+  const backendUrl = await getBackendUrl();
+  const testUrl = `${backendUrl}/api/health`;
+  
+  console.group('CORS Diagnosis');
+  
+  // Test 1: Simple GET
+  try {
+    const r1 = await fetch(testUrl);
+    console.log('✅ Simple GET:', r1.status);
+    console.log('Headers:', Object.fromEntries(r1.headers));
+  } catch (e) {
+    console.error('❌ Simple GET failed:', e);
+  }
+  
+  // Test 2: GET avec headers customs
+  try {
+    const r2 = await fetch(testUrl, {
+      headers: { 'Authorization': 'Bearer test' }
+    });
+    console.log('✅ GET with auth:', r2.status);
+  } catch (e) {
+    console.error('❌ GET with auth failed:', e);
+  }
+  
+  // Test 3: POST (déclenche preflight)
+  try {
+    const r3 = await fetch(`${backendUrl}/api/test`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ test: true })
+    });
+    console.log('✅ POST request:', r3.status);
+  } catch (e) {
+    console.error('❌ POST failed:', e);
+  }
+  
+  console.groupEnd();
+}
+
+// Exécuter au chargement extension
+diagnoseCORS();
+```
+
+**Scenario 3: "Token expiré non détecté"**
+```javascript
+// Middleware validation token automatique
+async function fetchWithAuthCheck(url, options = {}) {
+  try {
+    const token = await getAuthToken(); // Peut throw AUTH_REQUIRED
+    
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    // Backend retourne 401 - forcer refresh
+    if (response.status === 401) {
+      console.warn('Token rejected by backend, clearing...');
+      await chrome.storage.local.remove(['authToken', 'refreshToken']);
+      throw new Error('AUTH_REQUIRED');
+    }
+    
+    return response;
+    
+  } catch (error) {
+    if (error.message === 'AUTH_REQUIRED') {
+      // Notifier utilisateur
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon48.png',
+        title: 'Authentification Requise',
+        message: 'Veuillez vous reconnecter'
+      });
+      
+      // Ouvrir page options
+      chrome.runtime.openOptionsPage();
+    }
+    throw error;
+  }
+}
+```
+
+### 8.3 Monitoring et Alertes
+
+**Implémentation Telemetry Basique:**
+```javascript
+// background.js - tracking errors
+const errorLog = [];
+
+function logError(context, error) {
+  const entry = {
+    timestamp: Date.now(),
+    context,
+    error: {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    }
+  };
+  
+  errorLog.push(entry);
+  
+  // Limiter taille log
+  if (errorLog.length > 100) {
+    errorLog.shift();
+  }
+  
+  // Persister
+  chrome.storage.local.set({ errorLog });
+  
+  // Envoyer au backend (optionnel)
+  if (shouldReportError(error)) {
+    reportErrorToBackend(entry).catch(console.error);
+  }
+}
+
+function shouldReportError(error) {
+  // Ne pas rapporter erreurs réseau normales
+  if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    return false;
+  }
+  return true;
+}
+
+async function reportErrorToBackend(errorEntry) {
+  try {
+    const backendUrl = await getBackendUrl();
+    await fetch(`${backendUrl}/api/telemetry/errors`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(errorEntry)
+    });
+  } catch (e) {
+    // Ignorer erreurs reporting
+    console.warn('Failed to report error:', e);
+  }
+}
+
+// Wrapper global errors
+self.addEventListener('error', (event) => {
+  logError('global', event.error);
+});
+
+self.addEventListener('unhandledrejection', (event) => {
+  logError('promise', event.reason);
+});
+```
+
+**Dashboard Errors (options.html):**
+```html
+<div class="config-section">
+  <h2>📊 Diagnostics</h2>
+  <button id="showErrors">Afficher Journal Erreurs</button>
+  <button id="clearErrors">Effacer Erreurs</button>
+  <button id="exportErrors">Exporter pour Support</button>
+  <pre id="errorDisplay" style="max-height: 300px; overflow-y: auto;"></pre>
+</div>
+```
+```javascript
+// options.js
+document.getElementById('showErrors').addEventListener('click', async () => {
+  const { errorLog } = await chrome.storage.local.get('errorLog');
+  const display = document.getElementById('errorDisplay');
+  
+  if (!errorLog || errorLog.length === 0) {
+    display.textContent = 'Aucune erreur enregistrée';
+    return;
+  }
+  
+  display.textContent = JSON.stringify(errorLog, null, 2);
+});
+
+document.getElementById('exportErrors').addEventListener('click', async () => {
+  const { errorLog } = await chrome.storage.local.get('errorLog');
+  const blob = new Blob([JSON.stringify(errorLog, null, 2)], {
+    type: 'application/json'
+  });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `extension-errors-${Date.now()}.json`;
+  a.click();
+});
+```
+
+---
+
+## 9. PIPELINES ET WORKFLOWS {#9-pipelines}
+
+### 9.1 Pipeline Développement → Production
+```mermaid
+graph LR
+    A[Développement Local] --> B[Tunneling ngrok]
+    B --> C[Tests Manuels]
+    C --> D{Validation OK?}
+    D -->|Non| A
+    D -->|Oui| E[Déploiement Staging]
+    E --> F[Railway/Render]
+    F --> G[Tests Automatisés]
+    G --> H{Tests Passent?}
+    H -->|Non| A
+    H -->|Oui| I[Déploiement Production]
+    I --> J[Vercel/GAE]
+    J --> K[Publication Web Store]
+    K --> L[Monitoring Production]
+```
+
+### 9.2 Workflow Authentification
+┌─────────────┐
+│   Utilisateur│
+│  Clique Login│
+└──────┬──────┘
+│
+▼
+┌──────────────────────────────────┐
+│ Extension: chrome.identity.      │
+│ getAuthToken({ interactive: true})│
+└──────┬────────────────────────────┘
+│
+▼
+┌──────────────────────┐
+│ Google OAuth Consent │
+│ (popup navigateur)   │
+└──────┬───────────────┘
+│
+▼
+┌─────────────────────────────┐
+│ Google retourne token OAuth │
+└──────┬──────────────────────┘
+│
+▼
+┌──────────────────────────────────┐
+│ Extension envoie token à Backend │
+│ POST /api/auth/google            │
+└──────┬──────────────────────────┘
+│
+▼
+┌───────────────────────────────────┐
+│ Backend vérifie token Google      │
+│ Génère JWT + Refresh Token        │
+└──────┬────────────────────────────┘
+│
+▼
+┌────────────────────────────────────┐
+│ Extension stocke tokens            │
+│ chrome.storage.local               │
+└──────┬─────────────────────────────┘
+│
+▼
+┌────────────────────────┐
+│ Requêtes API Signées   │
+│ Authorization: Bearer  │
+└────────────────────────┘
+
+### 9.3 Workflow Installation Multi-Machines
+MACHINE 1 (Développeur)
+
+Développer extension
+Publier sur Chrome Web Store
+Activer sync Chrome
+ │
+ │ (Web Store)
+ ▼
+
+
+MACHINE 2 (Utilisateur)
+
+Se connecter Chrome (même compte)
+Extension installée automatiquement
+Ouvrir options.html
+Configurer URL backend
+Se connecter (OAuth)
+Extension opérationnelle
+ │
+ │ (Sync)
+ ▼
+
+
+MACHINE 3 (Utilisateur)
+
+backendUrl synchronisé automatiquement
+Juste se connecter (OAuth)
+Extension opérationnelle
+
+
+### 9.4 Routine Conditionnelle: Gestion Token
+```javascript
+async function getValidToken() {
+  // Checkpoint 1: Token existe?
+  const { authToken, tokenExpiry } = await chrome.storage.local.get([
+    'authToken',
+    'tokenExpiry'
+  ]);
+  
+  if (!authToken) {
+    // Node 1: Pas de token → Authentification
+    throw new Error('AUTH_REQUIRED');
+  }
+  
+  // Checkpoint 2: Token encore valide?
+  const now = Date.now();
+  const expiryWithMargin = tokenExpiry - (5 * 60 * 1000); // 5min marge
+  
+  if (now < expiryWithMargin) {
+    // Node 2: Token valide → Retourner
+    return authToken;
+  }
+  
+  // Checkpoint 3: Refresh token disponible?
+  const { refreshToken } = await chrome.storage.local.get('refreshToken');
+  
+  if (!refreshToken) {
+    // Node 3: Pas de refresh → Ré-authentification
+    await chrome.storage.local.remove(['authToken', 'tokenExpiry']);
+    throw new Error('AUTH_REQUIRED');
+  }
+  
+  // Node 4: Tenter refresh
+  try {
+    const backendUrl = await getBackendUrl();
+    const response = await fetch(`${backendUrl}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken })RetryPContinue});
+if (!response.ok) {
+  throw new Error('Refresh failed');
+}
+
+const { jwtToken, newRefreshToken } = await response.json();
+
+// Node 5: Sauvegarder nouveau token
+await chrome.storage.local.set({
+  authToken: jwtToken,
+  refreshToken: newRefreshToken || refreshToken,
+  tokenExpiry: now + (3600 * 1000) // 1h
+});
+
+return jwtToken;
+} catch (error) {
+// Node 6: Refresh échoué → Forcer ré-auth
+await chrome.storage.local.remove([
+'authToken',
+'refreshToken',
+'tokenExpiry'
+]);
+throw new Error('AUTH_REQUIRED');
+}
+}
+
+---
+
+## 10. CHECKLIST FINALE {#10-checklist}
+
+### 10.1 Backend Checklist
+☐ Déployé sur plateforme HTTPS (Vercel/Render/Railway/GAE)
+☐ URL publique stable obtenue
+☐ Variables d'environnement configurées (JWT_SECRET, DB_URL)
+☐ CORS configuré pour chrome-extension://*
+☐ Headers CORS incluent: Allow-Origin, Allow-Methods, Allow-Headers
+☐ Cache-Control: no-store sur OPTIONS requests
+☐ Route /api/health répond 200
+☐ Route /api/auth/google implémentée
+☐ Route /api/auth/refresh implémentée
+☐ JWT expiration: 1h
+☐ Refresh token expiration: 7d
+☐ Rate limiting configuré (100 req/15min)
+☐ Logging errors actif
+☐ Tests endpoint avec curl réussis
+
+### 10.2 Extension Checklist
+☐ manifest.json Manifest V3
+☐ manifest_version: 3
+☐ permissions: ["storage", "identity"]
+☐ host_permissions: domaines backend listés
+☐ background.service_worker: "background.js"
+☐ options_ui.page: "options.html"
+☐ content_security_policy.extension_pages configurée
+☐ connect-src inclut tous domaines backend
+☐ OAuth client_id configuré (si Google)
+☐ Icônes: 16x16, 48x48, 128x128 présentes
+☐ background.js implémenté avec:
+☐ getBackendUrl() depuis storage
+☐ getAuthToken() avec refresh automatique
+☐ callBackend() avec retry logic
+☐ chrome.runtime.onMessage listener
+☐ options.html créé avec champs:
+☐ Input URL backend
+☐ Bouton Save
+☐ Bouton Test Connection
+☐ Bouton Login OAuth
+☐ options.js implémenté avec:
+☐ Chargement URL depuis storage.sync
+☐ Sauvegarde URL dans storage.sync
+☐ Test connexion backend
+☐ Authentification OAuth complète
+☐ Pas de secrets hardcodés dans code
+☐ Tous console.log() utiles pour debug
+
+### 10.3 Sécurité Checklist
+☐ Toutes URLs backend en HTTPS (pas HTTP)
+☐ Tokens JWT stockés dans storage.local (pas sync)
+☐ Refresh tokens implémentés
+☐ Token expiration gérée automatiquement
+☐ Pas de secrets/API keys dans manifest
+☐ CSP empêche inline scripts
+☐ CSP connect-src liste blanche domaines
+☐ CORS backend limite origines chrome-extension://
+☐ Backend valide tokens JWT sur chaque requête
+☐ Rate limiting actif côté backend
+☐ Logs n'exposent pas données sensibles
+☐ Extension key réservée (ID fixe)
+
+### 10.4 Installation Multi-Machines Checklist
+☐ Extension publiée sur Chrome Web Store OU
+☐ Extension packagée (.crx) pour distribution manuelle
+☐ Documentation installation fournie
+☐ Machine 1: Extension installée et testée
+☐ Machine 2: Extension installée via même méthode
+☐ backendUrl identique sur machines (si sync)
+☐ Authentification réussie sur chaque machine
+☐ Appels API fonctionnels depuis chaque machine
+☐ Tests effectués sur réseaux différents
+☐ Tests effectués avec/sans VPN
+☐ Aucune erreur CORS dans consoles
+☐ Aucune erreur CSP dans consoles
+☐ Service worker reste actif (ou restart correct)
+
+### 10.5 Edge Cases 2025 Checklist
+☐ URLs tunnel dynamiques gérées (reload extension)
+☐ ID extension réservé (key dans manifest)
+☐ Cache CDN OPTIONS désactivé (Cache-Control: no-store)
+☐ CSP vérifiée sans typos
+☐ Incohérences extension_pages/content_scripts corrigées
+☐ Service worker keep-alive implémenté (si nécessaire)
+☐ Exponential backoff sur rate limiting
+☐ Network errors retryés automatiquement
+☐ Token refresh échoué → force re-login
+☐ Backend unreachable → notification utilisateur
+☐ Error logging implémenté
+☐ Telemetry basique active (optionnel)
+
+### 10.6 Tests End-to-End Checklist
+☐ Test 1: Installation extension première fois
+☐ Page options s'ouvre automatiquement
+☐ URL backend configurable
+☐ Sauvegarde réussit
+☐ Test 2: Authentification
+☐ Popup OAuth Google s'ouvre
+☐ Consentement utilisateur
+☐ Token reçu et stocké
+☐ Notification succès
+☐ Test 3: Appel API
+☐ Requête envoyée avec token
+☐ Réponse 200 reçue
+☐ Données parsées correctement
+☐ UI mise à jour
+☐ Test 4: Token expiré
+☐ Refresh automatique déclenché
+☐ Nouveau token obtenu
+☐ Requête réessayée avec succès
+☐ Test 5: Refresh token expiré
+☐ Notification "re-login requis"
+☐ Page options ouverte
+☐ Bouton Login visible
+☐ Test 6: Backend down
+☐ Retry automatique (3 tentatives)
+☐ Erreur affichée utilisateur
+☐ Pas de crash extension
+☐ Test 7: Changement URL backend
+☐ Nouvelle URL sauvegardée
+☐ Extension rechargée
+☐ Connexions utilisent nouvelle URL
+☐ Test 8: Installation machine 2
+☐ Extension installée via Web Store
+☐ backendUrl synchronisé (si sync)
+☐ Login OAuth fonctionne
+☐ Appels API réussissent
+☐ Test 9: Offline/Online
+☐ Mode offline: erreurs gérées
+☐ Retour online: auto-reconnexion
+☐ Pas de données perdues
+
+---
+
+## 11. ANNEXES TECHNIQUES {#11-annexes}
+
+### 11.1 Exemple Backend Complet (Node.js/Express)
+```javascript
+// server.js
+const express = require('express');
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+const rateLimit = require('express-rate-limit');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Configuration
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-prod';
+const REFRESH_SECRET = process.env.REFRESH_SECRET || 'refresh-secret-change';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+// Middleware: CORS avancé
+app.use((req, res, next) => {
+  const origin = req.get('origin');
+  
+  // Accepter extensions Chrome + domaines web spécifiques
+  if (origin && (
+    origin.startsWith('chrome-extension://') ||
+    origin === 'https://your-frontend.com'
+  )) {
+    res.set('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.set('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  res.set('Access-Control-Allow-Credentials', 'true');
+  res.set('Access-Control-Max-Age', '86400');
+  
+  // OPTIONS preflight
+  if (req.method === 'OPTIONS') {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    return res.sendStatus(204);
+  }
+  
+  next();
+});
+
+app.use(express.json());
+
+// Rate limiting
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  handler: (req, res) => {
+    res.status(429).json({
+      error: 'Too many requests',
+      retryAfter: Math.ceil(req.rateLimit.resetTime / 1000)
+    });
+  }
+});
+
+app.use('/api/', apiLimiter);
+
+// Middleware: Authentification JWT
+function authenticateJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+  
+  const token = authHeader.substring(7);
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).json({ error: 'Invalid or expired token' });
+  }
+}
+
+// Routes
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: Date.now(),
+    version: '1.0.0'
+  });
+});
+
+// Authentification Google
+app.post('/api/auth/google', async (req, res) => {
+  const { googleToken } = req.body;
+  
+  if (!googleToken) {
+    return res.status(400).json({ error: 'Google token required' });
+  }
+  
+  try {
+    // Vérifier token Google
+    const ticket = await googleClient.verifyIdToken({
+      idToken: googleToken,
+      audience: GOOGLE_CLIENT_ID
+    });
+    
+    const payload = ticket.getPayload();
+    const userId = payload.sub;
+    const email = payload.email;
+    const name = payload.name;
+    
+    // Créer/récupérer utilisateur en DB (simulé ici)
+    const user = {
+      id: userId,
+      email,
+      name
+    };
+    
+    // Générer JWT
+    const jwtToken = jwt.sign(
+      { userId, email, name },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    
+    const refreshToken = jwt.sign(
+      { userId, type: 'refresh' },
+      REFRESH_SECRET,
+      { expiresIn: '7d' }
+    );
+    
+    res.json({
+      jwtToken,
+      refreshToken,
+      user
+    });
+    
+  } catch (error) {
+    console.error('Auth error:', error);
+    res.status(401).json({ error: 'Invalid Google token' });
+  }
+});
+
+// Refresh token
+app.post('/api/auth/refresh', async (req, res) => {
+  const { refreshToken } = req.body;
+  
+  if (!refreshToken) {
+    return res.status(400).json({ error: 'Refresh token required' });
+  }
+  
+  try {
+    const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
+    
+    if (decoded.type !== 'refresh') {
+      throw new Error('Invalid token type');
+    }
+    
+    // Générer nouveau JWT
+    const jwtToken = jwt.sign(
+      { userId: decoded.userId },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    
+    // Optionnel: rotation refresh token
+    const newRefreshToken = jwt.sign(
+      { userId: decoded.userId, type: 'refresh' },
+      REFRESH_SECRET,
+      { expiresIn: '7d' }
+    );
+    
+    res.json({
+      jwtToken,
+      newRefreshToken
+    });
+    
+  } catch (error) {
+    console.error('Refresh error:', error);
+    res.status(403).json({ error: 'Invalid refresh token' });
+  }
+});
+
+// Route protégée: Profil utilisateur
+app.get('/api/user/profile', authenticateJWT, (req, res) => {
+  res.json({
+    userId: req.user.userId,
+    email: req.user.email,
+    name: req.user.name
+  });
+});
+
+// Route protégée: Exemple API
+app.post('/api/data', authenticateJWT, async (req, res) => {
+  try {
+    const { action, payload } = req.body;
+    
+    // Logique métier ici
+    const result = {
+      success: true,
+      action,
+      userId: req.user.userId,
+      timestamp: Date.now()
+    };
+    
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Telemetry (optionnel)
+app.post('/api/telemetry/errors', authenticateJWT, (req, res) => {
+  const errorData = req.body;
+  
+  // Logger ou stocker en DB
+  console.error('Client error:', {
+    userId: req.user.userId,
+    error: errorData
+  });
+  
+  res.sendStatus(204);
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// Démarrage
+app.listen(PORT, () => {
+  console.log(`Backend running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+});
+
+module.exports = app;
+```
+
+### 11.2 Exemple Extension Complète (Structure Fichiers)
+
+**manifest.json:**
+```json
+{
+  "manifest_version": 3,
+  "name": "Multi-Backend Extension",
+  "version": "1.0.0",
+  "description": "Extension Chrome connectée à backend distant configurable",
+  "permissions": ["storage", "identity", "notifications"],
+  "host_permissions": [
+    "https://your-backend.vercel.app/*",
+    "https://*.ngrok-free.app/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://your-backend.vercel.app https://*.ngrok-free.app https://accounts.google.com;"
+  },
+  "oauth2": {
+    "client_id": "YOUR_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": ["openid", "email", "profile"]
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
+```
+
+**popup.html:**
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 300px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    .status.connected {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status.disconnected {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border: none;
+      border-radius: 4px;
+      background: #4285f4;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #357ae8;
+    }
+  </style>
+</head>
+<body>
+  <h2>🔌 Extension Status</h2>
+  <div id="status" class="status disconnected">Vérification...</div>
+  <button id="testConnection">Tester Connexion</button>
+  <button id="openOptions">Paramètres</button>
+  <div id="result"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
+```
+
+**popup.js:**
+```javascript
+document.addEventListener('DOMContentLoaded', async () => {
+  const statusDiv = document.getElementById('status');
+  const resultDiv = document.getElementById('result');
+  
+  // Vérifier status initial
+  const { backendUrl } = await chrome.storage.sync.get('backendUrl');
+  const { authToken } = await chrome.storage.local.get('authToken');
+  
+  if (!backendUrl) {
+    statusDiv.textContent = '⚠️ Backend non configuré';
+    statusDiv.className = 'status disconnected';
+  } else if (!authToken) {
+    statusDiv.textContent = '⚠️ Non authentifié';
+    statusDiv.className = 'status disconnected';
+  } else {
+    statusDiv.textContent = '✅ Connecté';
+    statusDiv.className = 'status connected';
+  }
+  
+  // Test connexion
+  document.getElementById('testConnection').addEventListener('click', async () => {
+    resultDiv.textContent = 'Test en cours...';
+    
+    try {
+      const response = await chrome.runtime.sendMessage({
+        action: 'apiCall',
+        endpoint: '/api/health',
+        method: 'GET'
+      });
+      
+      if (response.success) {
+        resultDiv.textContent = `✅ Backend OK: ${response.data.status}`;
+        statusDiv.textContent = '✅ Connecté';
+        statusDiv.className = 'status connected';
+      } else {
+        resultDiv.textContent = `❌ Erreur: ${response.error}`;
+      }
+    } catch (error) {
+      resultDiv.textContent = `❌ Erreur: ${error.message}`;
+    }
+  });
+  
+  // Ouvrir options
+  document.getElementById('openOptions').addEventListener('click', () => {
+    chrome.runtime.openOptionsPage();
+  });
+});
+```
+
+### 11.3 Scripts de Déploiement
+
+**deploy-vercel.sh:**
+```bash
+#!/bin/bash
+set -e
+
+echo "🚀 Deploying backend to Vercel..."
+
+# Vérifier Vercel CLI installé
+if ! command -v vercel &> /dev/null; then
+    echo "❌ Vercel CLI not found. Installing..."
+    npm install -g vercel
+fi
+
+# Se connecter (si pas déjà fait)
+vercel login
+
+# Déployer
+cd backend/
+vercel --prod
+
+# Récupérer URL déployée
+URL=$(vercel ls --prod | grep "https://" | head -1 | awk '{print $2}')
+echo "✅ Deployed to: $URL"
+
+# Mettre à jour manifest extension
+cd ../extension/
+sed -i "s|https://your-backend.vercel.app|$URL|g" manifest.json
+
+echo "✅ Manifest updated with new URL"
+echo "⚠️  Don't forget to update CSP in manifest.json if domain changed"
+```
+
+**test-extension.sh:**
+```bash
+#!/bin/bash
+
+echo "🧪 Running extension tests..."
+
+# Test 1: Manifest validation
+echo "Validating manifest.json..."
+node -e "const m = require('./extension/manifest.json'); console.log('✅ Manifest valid');"
+
+# Test 2: Backend accessibility
+BACKEND_URL=$(node -e "const m = require('./extension/manifest.json'); console.log(m.host_permissions[0].replace('/*', ''));")
+echo "Testing backend at $BACKEND_URL..."
+
+curl -f -s "$BACKEND_URL/api/health" > /dev/null
+if [ $? -eq 0 ]; then
+    echo "✅ Backend accessible"
+else
+    echo "❌ Backend unreachable"
+    exit 1
+fi
+
+# Test 3: CORS headers
+echo "Testing CORS headers..."
+CORS_HEADER=$(curl -s -I -H "Origin: chrome-extension://test" "$BACKEND_URL/api/health" | grep -i "access-control-allow-origin")
+if [ -n "$CORS_HEADER" ]; then
+    echo "✅ CORS configured"
+else
+    echo "❌ CORS not configured"
+    exit 1
+fi
+
+echo "✅ All tests passed!"
+```
+
+### 11.4 Documentation Utilisateur
+
+**README.md (à inclure avec extension):**
+```markdown
+# Extension Multi-Backend
+
+## Installation
+
+### Méthode 1: Chrome Web Store (Recommandé)
+1. Visitez: [lien-web-store]
+2. Cliquez "Ajouter à Chrome"
+3. Acceptez les permissions
+4. Configuration automatique
+
+### Méthode 2: Installation Manuelle
+1. Téléchargez `extension.zip`
+2. Dézippez dans un dossier
+3. Ouvrez `chrome://extensions`
+4. Activez "Mode développeur"
+5. Cliquez "Charger l'extension non empaquetée"
+6. Sélectionnez le dossier dézippé
+
+## Configuration
+
+### 1. Configurer l'URL Backend
+1. Clic-droit sur icône extension → Options
+2. Saisir URL HTTPS de votre backend
+   - Exemple: `https://my-backend.vercel.app`
+3. Cliquer "Enregistrer l'URL"
+4. Cliquer "Tester la Connexion"
+5. Vérifier message ✅ "Backend accessible"
+
+### 2. Authentification
+1. Dans page Options, cliquer "Se Connecter"
+2. Popup Google OAuth s'ouvre
+3. Sélectionner compte Google
+4. Accepter permissions
+5. Vérifier message ✅ "Authentification réussie"
+
+## Utilisation
+
+- **Popup**: Cliquer icône extension pour status
+- **Options**: Paramètres avancés et diagnostics
+- **Notifications**: Alertes pour erreurs/déconnexions
+
+## Dépannage
+
+### "Backend non configuré"
+→ Aller dans Options et configurer URL
+
+### "Connexion impossible"
+→ Vérifier URL backend correcte (HTTPS obligatoire)
+→ Vérifier backend en ligne avec `curl`
+
+### "Authentification échouée"
+→ Vérifier Client ID OAuth dans manifest
+→ Réessayer connexion
+
+### Erreurs CORS
+→ Vérifier configuration CORS backend
+→ Domaine extension doit être autorisé
+
+## Support
+
+- Issues GitHub: [lien]
+- Email: support@example.com
+- Documentation: [lien-docs]
+```
+
+---
+
+## 📋 RÉSUMÉ EXÉCUTIF
+
+### Points Clés
+
+**Backend:**
+- Déploiement HTTPS obligatoire (Vercel/Render/Railway recommandés)
+- CORS configuré pour `chrome-extension://*`
+- Headers `Cache-Control: no-store` sur OPTIONS
+- Authentification JWT (1h) + Refresh tokens (7j)
+- Rate limiting actif
+
+**Extension:**
+- Manifest V3 avec `service_worker`
+- Permissions: `storage`, `identity`, `host_permissions`
+- CSP `connect-src` liste tous domaines backend
+- OAuth via `chrome.identity.getAuthToken()`
+- Tokens dans `chrome.storage.local` (jamais sync)
+
+**Multi-Machines:**
+- Publication Web Store → sync automatique
+- Installation manuelle → transfert fichiers
+- URL backend configurable via `options.html`
+- Authentification séparée par machine
+
+**Edge Cases 2025:**
+- URLs tunnel dynamiques → `chrome.runtime.reload()`
+- ID extension fixe → `key` dans manifest
+- Cache CDN → `Cache-Control: no-store`
+- CSP typos → validation stricte
+- Service worker crashes → keep-alive pattern
+
+### Métriques de Succès
+
+✅ Backend accessible publiquement en HTTPS  
+✅ Extension installée sur minimum 2 machines  
+✅ Authentification fonctionnelle  
+✅ Appels API réussissent avec tokens valides  
+✅ Aucune erreur CORS/CSP  
+✅ Refresh token automatique  
+✅ Rate limiting respecté  
+
+---
+
+## 🎯 CONCLUSION
+
+Ce document consolide les meilleures pratiques de **6 modèles d'IA de pointe** (GPT-5.1, GPT-5.1 Thinking, Grok 4, Gemini 2.5 Pro, Claude Sonnet 4.5, Qwen3 Plus) pour créer une extension Chrome connectée à un backend distant.
+
+**Architecture Validée:**
+- Backend cloud HTTPS (production) ou tunnel (développement)
+- Extension Manifest V3 avec permissions strictes
+- Authentification OAuth robuste avec refresh automatique
+- Configuration dynamique URL backend
+- Installation multi-machines via Web Store
+
+**Sécurité Renforcée:**
+- Pas de secrets hardcodés
+- Tokens JWT courts + rotation
+- CORS/CSP configurés correctement
+- Rate limiting backend
+
+**Couverture Complète Edge Cases 2025:**
+- Tunnels dynamiques
+- Cache CDN préflight
+- ID extension stable
+- Service worker lifecycle
+- Token expiration
+
+**Prêt pour Production:**
+Ce guide fournit tous les éléments nécessaires pour déployer une solution robuste, sécurisée et maintenable sur plusieurs ordinateurs.
+
+---
+
+**Version:** 1.0.0  
+**Date:** 15 Novembre 2025  
+**Sources:** Consolidation 6 modèles IA (GPT-5.1, Grok 4, Gemini 2.5, Claude 4.5, Qwen3)  
+**License:** Documentation technique - Usage libre
+
+---
+
+**FIN DU DOCUMENT CONSOLIDÉ**

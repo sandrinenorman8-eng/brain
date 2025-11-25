@@ -1,0 +1,17 @@
+# Chunking Service Dependencies
+# Install: pip install -r requirements_chunking.txt
+
+# Core
+flask==3.0.0
+flask-cors==4.0.0
+gunicorn==21.2.0
+
+# Token counting
+tiktoken==0.5.2
+
+# AI (already in main requirements)
+google-generativeai>=0.3.0
+
+# Utils
+python-dotenv==1.0.0
+requests==2.32.3

@@ -1,0 +1,10 @@
+runtime: nodejs20
+instance_class: F1
+
+env_variables:
+  NODE_ENV: "production"
+  FLASK_URL: "http://localhost:5008"
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 5

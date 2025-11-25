@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "MCP Integration Test",
+  "description": "Monitors memobrik project files and triggers MCP server integration tests including filesystem operations, Playwright navigation, and Chrome DevTools commands",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "G:\\memobrik\\package.json",
+      "G:\\memobrik\\app.py",
+      "G:\\memobrik\\deuxieme_cerveau\\app.py",
+      "G:\\memobrik\\deuxieme_cerveau\\package.json"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Execute the following MCP integration tests:\n\n1. Call mcp.filesystem.list_directory(\"G:\\\\memobrik\") to list directory contents\n2. Call mcp.filesystem.read_file(\"G:\\\\memobrik\\\\package.json\") to read package configuration\n3. Call mcp.playwright.navigate(\"http://localhost:3000\") to navigate to local server\n4. Call mcp.playwright.evaluate with script: `return { title: document.title, url: window.location.href, errors: window.onerror ? 'présentes' : 'aucune' }` to check page state\n5. Call mcp.chromeDevtools.executeCommand(\"Runtime.evaluate\", {\"expression\":\"window.performance.now()\"}) to check performance timing\n\nReturn results in JSON format:\n{\n  \"appel_1\": {\"fonction\": \"mcp.filesystem.list_directory\", \"paramètres\": \"G:\\\\memobrik\", \"résultat\": [ACTUAL_DATA]},\n  \"appel_2\": {\"fonction\": \"mcp.filesystem.read_file\", \"paramètres\": \"G:\\\\memobrik\\\\package.json\", \"résultat\": [ACTUAL_DATA]},\n  \"appel_3\": {\"fonction\": \"mcp.playwright.navigate\", \"paramètres\": \"http://localhost:3000\", \"résultat\": [ACTUAL_DATA]},\n  \"appel_4\": {\"fonction\": \"mcp.playwright.evaluate\", \"paramètres\": \"script JS\", \"résultat\": [ACTUAL_DATA]},\n  \"appel_5\": {\"fonction\": \"mcp.chromeDevtools.executeCommand\", \"paramètres\": \"Runtime.evaluate\", \"résultat\": [ACTUAL_DATA]}\n}\n\nIf any call fails, respond with: \"BLOCAGE: [technical reason + error code]\""
+  }
+}

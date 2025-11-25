@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>TEST FUSION</title>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .date-highlight {
+            color: #ff6b6b;
+            font-weight: bold;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 2px 4px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #2b2b2b;
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Test Fusion - Encodage Correct</h1>
+
+        <p><strong>Fichier test avec dates :</strong></p>
+        <pre>
+Test file for fusion - <span class="date-highlight">2023-09-26</span>
+This is a test file with various date formats:
+- ISO format: <span class="date-highlight">2023-09-26</span>
+- European format: <span class="date-highlight">26/09/2023</span>
+- US format: <span class="date-highlight">09/26/2023</span>
+- Full month: <span class="date-highlight">September 26, 2023</span>
+- Abbreviated month: <span class="date-highlight">Sep 26, 2023</span>
+
+Created for testing the fusion functionality with proper filename format.
+        </pre>
+
+        <hr>
+        <p><strong>Si vous voyez les dates en ROUGE, l'encodage est correct !</strong></p>
+        <p><a href="http://localhost:5008/fusionner_backend?dossier=scénario" target="_blank">🔗 Tester la fusion backend</a></p>
+    </div>
+</body>
+</html>

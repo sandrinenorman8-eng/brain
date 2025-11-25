@@ -1,0 +1,285 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ],
+      "env": {
+        "SystemRoot": "C:\\Windows",
+        "PROGRAMFILES": "C:\\Program Files",
+        "MCP_BROWSER_USE_OWN_BROWSER": "true",
+        "MCP_BROWSER_CDP_URL": "ws://localhost:9222/devtools/browser/5cbc8462-363b-42bf-952e-95902ff058ac",
+        "MCP_REQUEST_TIMEOUT": "300",
+        "MCP_CONNECTION_TIMEOUT": "60"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "mcp_chrome_devtools_take_snapshot",
+        "mcp_chrome_devtools_click",
+        "mcp_chrome_devtools_evaluate_script",
+        "list_console_messages",
+        "take_screenshot",
+        "evaluate_script",
+        "navigate_page",
+        "take_snapshot",
+        "list_pages",
+        "click",
+        "fill",
+        "get_console_message",
+        "handle_dialog",
+        "wait_for",
+        "list_network_requests",
+        "get_network_request",
+        "select_page",
+        "drag",
+        "fill_form",
+        "hover",
+        "press_key",
+        "upload_file",
+        "close_page",
+        "new_page",
+        "emulate",
+        "resize_page",
+        "performance_analyze_insight",
+        "performance_start_trace",
+        "performance_stop_trace"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "playwright-mcp@latest"
+      ],
+      "env": {
+        "MCP_REQUEST_TIMEOUT": "300",
+        "MCP_CONNECTION_TIMEOUT": "60"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "mcp_playwright_get_context",
+        "mcp_playwright_get_screenshot",
+        "mcp_playwright_execute_code",
+        "init-browser",
+        "get-screenshot",
+        "get-context",
+        "execute-code",
+        "start_codegen_session",
+        "end_codegen_session",
+        "get_codegen_session",
+        "clear_codegen_session",
+        "Playwright_navigate",
+        "Playwright_screenshot",
+        "Playwright_click",
+        "playwright_click_and_switch_tab",
+        "Playwright_iframe_click",
+        "Playwright_iframe_fill",
+        "Playwright_hover",
+        "Playwright_fill",
+        "Playwright_select",
+        "playwright_upload_file",
+        "Playwright_evaluate",
+        "Playwright_console_logs",
+        "Playwright_close",
+        "Playwright_expect_response",
+        "Playwright_assert_response",
+        "playwright_custom_user_agent",
+        "playwright_get_visible_text",
+        "playwright_get_visible_html",
+        "playwright_go_back",
+        "playwright_go_forward",
+        "playwright_drag",
+        "playwright_press_key",
+        "playwright_save_as_pdf"
+      ]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "--yes",
+        "@modelcontextprotocol/server-filesystem",
+        "G:\\memobrik"
+      ],
+      "env": {
+        "MCP_ALLOWED_DIRECTORIES": "G:\\memobrik"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "list_allowed_directories",
+        "read_text_file",
+        "write_file",
+        "edit_file",
+        "mcp_filesystem_list_directory",
+        "mcp_filesystem_read_text_file",
+        "mcp_filesystem_write_file",
+        "mcp_filesystem_edit_file",
+        "mcp_filesystem_create_directory",
+        "mcp_filesystem_search_files",
+        "list_directory",
+        "read_file",
+        "create_directory"
+      ]
+    },
+    "accessibility": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@axe-core/wdio"
+      ],
+      "env": {
+        "MCP_REQUEST_TIMEOUT": "300",
+        "MCP_CONNECTION_TIMEOUT": "60"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "scan-url",
+        "scan-html",
+        "scan-batch",
+        "summarise-violations",
+        "check_orientation_lock",
+        "get_rules",
+        "analyze",
+        "remediate"
+      ]
+    },
+    "fetch": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-server-fetch"
+      ],
+      "env": {
+        "MCP_REQUEST_TIMEOUT": "300",
+        "MCP_CONNECTION_TIMEOUT": "60"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "fetch"
+      ]
+    },
+    "tavily": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "tavily-mcp@0.2.3"
+      ],
+      "env": {
+        "TAVILY_API_KEY": "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"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "mcp_tavily_tavily_search",
+        "mcp_tavily_tavily_crawl",
+        "mcp_tavily_tavily_extract",
+        "mcp_tavily_tavily_map",
+        "tavily-search"
+      ]
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-puppeteer"
+      ],
+      "disabled": false,
+      "autoApprove": [
+        "mcp_puppeteer_puppeteer_navigate",
+        "mcp_puppeteer_puppeteer_screenshot",
+        "mcp_puppeteer_puppeteer_click",
+        "mcp_puppeteer_puppeteer_evaluate",
+        "mcp_puppeteer_puppeteer_hover",
+        "mcp_puppeteer_puppeteer_fill",
+        "mcp_puppeteer_puppeteer_select",
+        "puppeteer_navigate",
+        "puppeteer_screenshot",
+        "puppeteer_click",
+        "puppeteer_evaluate"
+      ]
+    },
+    "browserbase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@browserbasehq/mcp"
+      ],
+      "env": {
+        "BROWSERBASE_API_KEY": "bb_live_-Q2jqMd3m0I3A3yV7BrCKvl1xAs",
+        "BROWSERBASE_PROJECT_ID": "bee5922c-e094-40c2-8279-fe176da275dc",
+        "GEMINI_API_KEY": "AIzaSyAUDVRdWDVxamiqtCsqEvdMUaVuIs81il8",
+        "MODEL_NAME": "gemini-2.0-flash-lite",
+        "MCP_REQUEST_TIMEOUT": "300",
+        "MCP_CONNECTION_TIMEOUT": "60"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "browserbase_stagehand_navigate",
+        "browserbase_stagehand_act",
+        "browserbase_stagehand_extract",
+        "browserbase_stagehand_observe",
+        "browserbase_screenshot",
+        "browserbase_stagehand_get_url",
+        "browserbase_session_create",
+        "browserbase_session_close",
+        "multi_browserbase_stagehand_session_create",
+        "multi_browserbase_stagehand_session_list",
+        "multi_browserbase_stagehand_session_close",
+        "multi_browserbase_stagehand_navigate_session",
+        "multi_browserbase_stagehand_act_session",
+        "multi_browserbase_stagehand_extract_session",
+        "multi_browserbase_stagehand_observe_session",
+        "multi_browserbase_stagehand_get_url_session"
+      ]
+    },
+    "apify": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@apify/actors-mcp-server"
+      ],
+      "env": {
+        "APIFY_TOKEN": "REDACTED",
+        "MCP_REQUEST_TIMEOUT": "300",
+        "MCP_CONNECTION_TIMEOUT": "60"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "search-actors",
+        "fetch-actor-details",
+        "call-actor",
+        "apify/rag-web-browser",
+        "search-apify-docs"
+      ]
+    },
+    "n8n-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "n8n-mcp@2.12.2"
+      ],
+      "env": {
+        "MCP_MODE": "stdio",
+        "LOG_LEVEL": "error",
+        "DISABLE_CONSOLE_OUTPUT": "true",
+        "MCP_REQUEST_TIMEOUT": "300",
+        "MCP_CONNECTION_TIMEOUT": "60"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "n8n_trigger_webhook_workflow",
+        "n8n_get_execution",
+        "n8n_list_executions",
+        "n8n_delete_execution",
+        "n8n_health_check",
+        "n8n_diagnostic",
+        "n8n_list_available_tools",
+        "get_property_dependencies",
+        "get_node_documentation",
+        "get_database_statistics"
+      ]
+    }
+  }
+}

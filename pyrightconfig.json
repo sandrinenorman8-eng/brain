@@ -1,0 +1,31 @@
+{
+  "include": [
+    "deuxieme_cerveau"
+  ],
+  "exclude": [
+    "deuxieme_cerveau/backups",
+    "deuxieme_cerveau/launch app",
+    "**/node_modules"
+  ],
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "reportMissingImports": "warning",
+  "reportMissingTypeStubs": "warning",
+  "reportImportCycles": "error",
+  "reportUnusedImport": "warning",
+  "reportUnusedClass": "warning",
+  "reportUnusedFunction": "warning",
+  "reportUnusedVariable": "warning",
+  "reportDuplicateImport": "warning",
+  "pythonPlatform": "Windows",
+  "executionEnvironments": [
+    {
+      "root": "deuxieme_cerveau",
+      "pythonVersion": "3.11",
+      "extraPaths": [
+        "C:\\Users\\14000\\AppData\\Roaming\\Python\\Python311\\site-packages"
+      ]
+    }
+  ]
+}

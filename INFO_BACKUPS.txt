@@ -1,0 +1,93 @@
+========================================
+  SYSTEME DE BACKUP - MEMOBRIK
+========================================
+
+DEUX METHODES DE BACKUP DISPONIBLES:
+
+1. BACKUP DEPUIS L'APPLICATION (Recommandé)
+   - Ouvrir http://localhost:5008
+   - Cliquer sur "💾 Créer un Backup Complet"
+   - Le backup se crée automatiquement
+   - Sauvegarde TOUT le dossier G:\memobrik
+
+2. BACKUP MANUEL (Script)
+   - Double-cliquer sur BACKUP_COMPLET.bat
+   - Le backup se crée à la racine
+   - Sauvegarde TOUT le dossier G:\memobrik
+
+========================================
+  CONTENU DU BACKUP
+========================================
+
+Le backup inclut:
+✅ deuxieme_cerveau/
+   ├── src/          (code source)
+   ├── data/         (toutes les notes)
+   ├── backups/
+   ├── fusion_global/
+   └── ...
+
+✅ Tous les autres fichiers à la racine de memobrik
+✅ Tous les autres dossiers
+
+Le backup EXCLUT:
+❌ Fichiers cachés (.git, .venv, etc.)
+❌ node_modules/
+❌ __pycache__/
+❌ Fichiers .pyc
+❌ Le dossier zip/ (contient les backups)
+
+========================================
+  RESTAURATION
+========================================
+
+Pour restaurer un backup:
+
+1. Extraire le fichier ZIP
+2. Remplacer le dossier memobrik actuel
+3. Relancer l'application
+
+OU
+
+1. Extraire dans un nouveau dossier
+2. Tester avant de remplacer l'ancien
+
+========================================
+  EMPLACEMENT DES BACKUPS
+========================================
+
+Les backups sont créés dans le dossier:
+G:\memobrik\zip\
+
+Nom du fichier:
+backup_memobrik_complet_YYYY-MM-DD_HH-MM-SS.zip
+
+Exemple:
+G:\memobrik\zip\backup_memobrik_complet_2025-10-16_14-30-45.zip
+                                        └─ Date et heure
+
+⚠️ Le dossier zip/ est EXCLU du backup (pas de backup de backup)
+
+========================================
+  CONSEILS
+========================================
+
+✅ Faire un backup AVANT toute modification importante
+✅ Garder plusieurs backups (au moins 3)
+✅ Tester la restauration de temps en temps
+✅ Stocker les backups sur un autre disque/cloud
+
+⚠️ Les backups peuvent être volumineux (plusieurs MB)
+⚠️ Vérifier l'espace disque disponible
+
+========================================
+  AUTOMATISATION (Optionnel)
+========================================
+
+Pour automatiser les backups:
+
+1. Créer une tâche planifiée Windows
+2. Exécuter BACKUP_COMPLET.bat tous les jours
+3. Ou utiliser un script de sauvegarde cloud
+
+========================================

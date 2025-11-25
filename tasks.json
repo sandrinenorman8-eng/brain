@@ -1,0 +1,417 @@
+{
+  "total_tasks": 67,
+  "phases": [
+    "Setup & Architecture",
+    "Configuration Extension",
+    "Installation Multi-Machines",
+    "Edge Cases & Corrections",
+    "Validation & Debugging",
+    "Workflows & Pipelines",
+    "Checklists",
+    "Annexes & Exemples"
+  ],
+  "sections": [
+    {
+      "num": "1",
+      "title": "Introduction",
+      "file": "01_Introduction.md",
+      "size": "8 lignes, 171 caractères"
+    },
+    {
+      "num": "2",
+      "title": "Phase 1 Déploiement Du Backend",
+      "file": "02_phase_1_déploiement_du_backend.md",
+      "size": "11 lignes, 285 caractères"
+    },
+    {
+      "num": "3",
+      "title": "1 Introduction Et Contexte 1-Introduction",
+      "file": "03_1_introduction_et_contexte_1-introduction.md",
+      "size": "12 lignes, 613 caractères"
+    },
+    {
+      "num": "4",
+      "title": "2 Architecture Globale 2-Architecture",
+      "file": "04_2_architecture_globale_2-architecture.md",
+      "size": "28 lignes, 1,014 caractères"
+    },
+    {
+      "num": "5",
+      "title": "3 Phase 1 Déploiement Du Backend 3-Phase1",
+      "file": "05_3_phase_1_déploiement_du_backend_3-phase1.md",
+      "size": "26 lignes, 835 caractères"
+    },
+    {
+      "num": "6",
+      "title": "Se Connecter",
+      "file": "06_se_connecter.md",
+      "size": "31 lignes, 430 caractères"
+    },
+    {
+      "num": "7",
+      "title": "Récupérer Lurl Déployée",
+      "file": "07_récupérer_lurl_déployée.md",
+      "size": "44 lignes, 1,252 caractères"
+    },
+    {
+      "num": "8",
+      "title": "Réponse Attendue",
+      "file": "08_réponse_attendue.md",
+      "size": "8 lignes, 120 caractères"
+    },
+    {
+      "num": "9",
+      "title": "Phase 2 Configuration De Lextension Chrome",
+      "file": "09_phase_2_configuration_de_lextension_chrome.md",
+      "size": "329 lignes, 8,866 caractères"
+    },
+    {
+      "num": "10",
+      "title": "5 Phase 3 Sécurisation Et Authentification 5-Phase3",
+      "file": "10_5_phase_3_sécurisation_et_authentification_5-phase3.md",
+      "size": "228 lignes, 6,242 caractères"
+    },
+    {
+      "num": "11",
+      "title": "6 Phase 4 Installation Multi-Machines 6-Phase4",
+      "file": "11_6_phase_4_installation_multi-machines_6-phase4.md",
+      "size": "52 lignes, 1,394 caractères"
+    },
+    {
+      "num": "12",
+      "title": "1 Upload Zip",
+      "file": "12_1_upload_zip.md",
+      "size": "12 lignes, 289 caractères"
+    },
+    {
+      "num": "13",
+      "title": "Télécharger Fichier Pem Depuis Dashboard",
+      "file": "13_télécharger_fichier_pem_depuis_dashboard.md",
+      "size": "11 lignes, 289 caractères"
+    },
+    {
+      "num": "14",
+      "title": "1 Ouvrir Chromeextensions",
+      "file": "14_1_ouvrir_chromeextensions.md",
+      "size": "10 lignes, 213 caractères"
+    },
+    {
+      "num": "15",
+      "title": "3 Extension Root Directory Pathtoextension",
+      "file": "15_3_extension_root_directory_pathtoextension.md",
+      "size": "6 lignes, 236 caractères"
+    },
+    {
+      "num": "16",
+      "title": "Ou Utiliser Git",
+      "file": "16_ou_utiliser_git.md",
+      "size": "8 lignes, 162 caractères"
+    },
+    {
+      "num": "17",
+      "title": "Machine Cible",
+      "file": "17_machine_cible.md",
+      "size": "21 lignes, 534 caractères"
+    },
+    {
+      "num": "18",
+      "title": "63 Synchronisation Chrome Auto-Sync",
+      "file": "18_63_synchronisation_chrome_auto-sync.md",
+      "size": "25 lignes, 630 caractères"
+    },
+    {
+      "num": "19",
+      "title": "64 Validation Multi-Machines",
+      "file": "19_64_validation_multi-machines.md",
+      "size": "14 lignes, 428 caractères"
+    },
+    {
+      "num": "20",
+      "title": "Phase 5 Edge Cases Et Corrections 2025",
+      "file": "20_phase_5_edge_cases_et_corrections_2025.md",
+      "size": "50 lignes, 1,263 caractères"
+    },
+    {
+      "num": "21",
+      "title": "72 Problème Id Extension Changeant",
+      "file": "21_72_problème_id_extension_changeant.md",
+      "size": "14 lignes, 358 caractères"
+    },
+    {
+      "num": "22",
+      "title": "Lors Première Publication Chrome Génère",
+      "file": "22_lors_première_publication_chrome_génère.md",
+      "size": "9 lignes, 250 caractères"
+    },
+    {
+      "num": "23",
+      "title": "Convertir Pem En Clé Publique Pour Manifest",
+      "file": "23_convertir_pem_en_clé_publique_pour_manifest.md",
+      "size": "29 lignes, 652 caractères"
+    },
+    {
+      "num": "24",
+      "title": "73 Problème Cache Cdn Des Préflights Cors",
+      "file": "24_73_problème_cache_cdn_des_préflights_cors.md",
+      "size": "35 lignes, 1,077 caractères"
+    },
+    {
+      "num": "25",
+      "title": "Cloudfront Behavior Settings",
+      "file": "25_cloudfront_behavior_settings.md",
+      "size": "32 lignes, 648 caractères"
+    },
+    {
+      "num": "26",
+      "title": "Vérifier Headers Cors Et Cache",
+      "file": "26_vérifier_headers_cors_et_cache.md",
+      "size": "6 lignes, 186 caractères"
+    },
+    {
+      "num": "27",
+      "title": "Réponse Attendue",
+      "file": "27_réponse_attendue.md",
+      "size": "7 lignes, 149 caractères"
+    },
+    {
+      "num": "28",
+      "title": "74 Problème Erreurs Csp Silencieuses",
+      "file": "28_74_problème_erreurs_csp_silencieuses.md",
+      "size": "87 lignes, 2,191 caractères"
+    },
+    {
+      "num": "29",
+      "title": "75 Problème Service Worker Crashes",
+      "file": "29_75_problème_service_worker_crashes.md",
+      "size": "61 lignes, 1,341 caractères"
+    },
+    {
+      "num": "30",
+      "title": "76 Problème Rate Limiting Backend",
+      "file": "30_76_problème_rate_limiting_backend.md",
+      "size": "102 lignes, 2,772 caractères"
+    },
+    {
+      "num": "31",
+      "title": "Phase 6 Validation Et Debugging",
+      "file": "31_phase_6_validation_et_debugging.md",
+      "size": "6 lignes, 125 caractères"
+    },
+    {
+      "num": "32",
+      "title": "Test 1 Endpoint Santé",
+      "file": "32_test_1_endpoint_santé.md",
+      "size": "7 lignes, 211 caractères"
+    },
+    {
+      "num": "33",
+      "title": "Attendu Access-Control-Allow-Origin Présent",
+      "file": "33_attendu_access-control-allow-origin_présent.md",
+      "size": "6 lignes, 202 caractères"
+    },
+    {
+      "num": "34",
+      "title": "Attendu Http 401 Normal Sans Vrai Token",
+      "file": "34_attendu_http_401_normal_sans_vrai_token.md",
+      "size": "65 lignes, 1,303 caractères"
+    },
+    {
+      "num": "35",
+      "title": "82 Debugging Avancé",
+      "file": "35_82_debugging_avancé.md",
+      "size": "126 lignes, 2,944 caractères"
+    },
+    {
+      "num": "36",
+      "title": "83 Monitoring Et Alertes",
+      "file": "36_83_monitoring_et_alertes.md",
+      "size": "106 lignes, 2,531 caractères"
+    },
+    {
+      "num": "37",
+      "title": "Pipelines Et Workflows",
+      "file": "37_pipelines_et_workflows.md",
+      "size": "20 lignes, 493 caractères"
+    },
+    {
+      "num": "38",
+      "title": "92 Workflow Authentification",
+      "file": "38_92_workflow_authentification.md",
+      "size": "47 lignes, 991 caractères"
+    },
+    {
+      "num": "39",
+      "title": "93 Workflow Installation Multi-Machines",
+      "file": "39_93_workflow_installation_multi-machines.md",
+      "size": "31 lignes, 452 caractères"
+    },
+    {
+      "num": "40",
+      "title": "94 Routine Conditionnelle Gestion Token",
+      "file": "40_94_routine_conditionnelle_gestion_token.md",
+      "size": "66 lignes, 1,645 caractères"
+    },
+    {
+      "num": "41",
+      "title": "Checklist Finale",
+      "file": "41_checklist_finale.md",
+      "size": "18 lignes, 617 caractères"
+    },
+    {
+      "num": "42",
+      "title": "102 Extension Checklist",
+      "file": "42_102_extension_checklist.md",
+      "size": "29 lignes, 918 caractères"
+    },
+    {
+      "num": "43",
+      "title": "103 Sécurité Checklist",
+      "file": "43_103_sécurité_checklist.md",
+      "size": "14 lignes, 496 caractères"
+    },
+    {
+      "num": "44",
+      "title": "104 Installation Multi-Machines Checklist",
+      "file": "44_104_installation_multi-machines_checklist.md",
+      "size": "15 lignes, 594 caractères"
+    },
+    {
+      "num": "45",
+      "title": "105 Edge Cases 2025 Checklist",
+      "file": "45_105_edge_cases_2025_checklist.md",
+      "size": "14 lignes, 546 caractères"
+    },
+    {
+      "num": "46",
+      "title": "106 Tests End-To-End Checklist",
+      "file": "46_106_tests_end-to-end_checklist.md",
+      "size": "43 lignes, 1,098 caractères"
+    },
+    {
+      "num": "47",
+      "title": "Annexes Techniques",
+      "file": "47_annexes_techniques.md",
+      "size": "246 lignes, 5,574 caractères"
+    },
+    {
+      "num": "48",
+      "title": "112 Exemple Extension Complète Structure Fichiers",
+      "file": "48_112_exemple_extension_complète_structure_fichiers.md",
+      "size": "147 lignes, 3,624 caractères"
+    },
+    {
+      "num": "49",
+      "title": "113 Scripts De Déploiement",
+      "file": "49_113_scripts_de_déploiement.md",
+      "size": "9 lignes, 115 caractères"
+    },
+    {
+      "num": "50",
+      "title": "Vérifier Vercel Cli Installé",
+      "file": "50_vérifier_vercel_cli_installé.md",
+      "size": "6 lignes, 146 caractères"
+    },
+    {
+      "num": "51",
+      "title": "Se Connecter Si Pas Déjà Fait",
+      "file": "51_se_connecter_si_pas_déjà_fait.md",
+      "size": "7 lignes, 79 caractères"
+    },
+    {
+      "num": "52",
+      "title": "Récupérer Url Déployée",
+      "file": "52_récupérer_url_déployée.md",
+      "size": "18 lignes, 421 caractères"
+    },
+    {
+      "num": "53",
+      "title": "Test 1 Manifest Validation",
+      "file": "53_test_1_manifest_validation.md",
+      "size": "16 lignes, 499 caractères"
+    },
+    {
+      "num": "54",
+      "title": "Test 3 Cors Headers",
+      "file": "54_test_3_cors_headers.md",
+      "size": "13 lignes, 315 caractères"
+    },
+    {
+      "num": "55",
+      "title": "114 Documentation Utilisateur",
+      "file": "55_114_documentation_utilisateur.md",
+      "size": "6 lignes, 111 caractères"
+    },
+    {
+      "num": "56",
+      "title": "Installation",
+      "file": "56_installation.md",
+      "size": "6 lignes, 143 caractères"
+    },
+    {
+      "num": "57",
+      "title": "4 Configuration Automatique",
+      "file": "57_4_configuration_automatique.md",
+      "size": "6 lignes, 152 caractères"
+    },
+    {
+      "num": "58",
+      "title": "4 Activez Mode Développeur",
+      "file": "58_4_activez_mode_développeur.md",
+      "size": "6 lignes, 126 caractères"
+    },
+    {
+      "num": "59",
+      "title": "Configurer Lurl Backend",
+      "file": "59_configurer_lurl_backend.md",
+      "size": "6 lignes, 217 caractères"
+    },
+    {
+      "num": "60",
+      "title": "5 Vérifier Message Backend Accessible",
+      "file": "60_5_vérifier_message_backend_accessible.md",
+      "size": "6 lignes, 167 caractères"
+    },
+    {
+      "num": "61",
+      "title": "4 Accepter Permissions",
+      "file": "61_4_accepter_permissions.md",
+      "size": "9 lignes, 235 caractères"
+    },
+    {
+      "num": "62",
+      "title": "Dépannage",
+      "file": "62_dépannage.md",
+      "size": "9 lignes, 193 caractères"
+    },
+    {
+      "num": "63",
+      "title": "Authentification Échouée",
+      "file": "63_authentification_échouée.md",
+      "size": "8 lignes, 182 caractères"
+    },
+    {
+      "num": "64",
+      "title": "Support",
+      "file": "64_support.md",
+      "size": "9 lignes, 95 caractères"
+    },
+    {
+      "num": "65",
+      "title": "Résumé Exécutif",
+      "file": "65_résumé_exécutif.md",
+      "size": "31 lignes, 938 caractères"
+    },
+    {
+      "num": "66",
+      "title": "Métriques De Succès",
+      "file": "66_métriques_de_succès.md",
+      "size": "12 lignes, 277 caractères"
+    },
+    {
+      "num": "67",
+      "title": "Conclusion",
+      "file": "67_conclusion.md",
+      "size": "37 lignes, 1,175 caractères"
+    }
+  ]
+}
