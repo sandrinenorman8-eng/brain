@@ -1,1 +1,0 @@
-02:55:07: Connecter un mémo brique pour récupérer les informations de mémo brick et pour la gestion du temps. C'est une option payante en plus. Pour la gestion du temps et le calcul de temps gagné. Le temps, ça reste le plus important dans une existence.

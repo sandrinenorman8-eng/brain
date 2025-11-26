@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@browserbasehq/stagehand": "^3.0.3",
-    "playwright": "^1.56.1"
-  }
-}

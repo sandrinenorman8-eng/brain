@@ -1,9 +1,0 @@
-TODO Test - 2023-09-25
-This is a test TODO file with dates:
-- Today: 2023-09-25
-- Tomorrow: 26/09/2023
-- Next week: 2023-10-01
-- Meeting on October 5th, 2023
-- Due date: Oct 10, 2023
-
-Testing the backend fusion functionality.

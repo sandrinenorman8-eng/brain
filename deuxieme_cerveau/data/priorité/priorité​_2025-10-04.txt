@@ -1,1 +1,0 @@
-21:37:35: aws        https://aws.amazon.com/fr/q/developer/

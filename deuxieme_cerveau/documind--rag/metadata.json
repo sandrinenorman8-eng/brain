@@ -1,5 +1,0 @@
-{
-  "name": "DocuMind - Gemini PDF RAG",
-  "description": "A Retrieval-Augmented Generation (RAG) application allowing users to chat with their PDF documents using Google's Gemini API long-context capabilities.",
-  "requestFramePermissions": []
-}

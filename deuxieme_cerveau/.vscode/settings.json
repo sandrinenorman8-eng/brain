@@ -1,8 +1,0 @@
-{
-  "editor.formatOnSave": false,
-  "editor.codeActionsOnSave": {
-    "source.fixAll": false
-  },
-  "html.format.enable": false,
-  "prettier.enable": false
-}
