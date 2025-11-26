@@ -201,3 +201,20 @@ from flask import jsonify
 def all_files_compat():
     files = get_all_files()
     return jsonify(files)
+
+@notes_bp.route('/api/knowledge-graph', methods=['GET'])
+def knowledge_graph_data():
+    try:
+        all_files = get_all_files()
+        notes_data = []
+        for file_info in all_files:
+            content = read_note(file_info['category'], file_info['filename'])
+            tags = [line.strip().replace('#', '') for line in content.split('\n') if line.strip().startswith('#')]
+            notes_data.append({
+                'id': file_info['filename'],
+                'summary': content[:100],
+                'tags': tags
+            })
+        return success_response(notes_data)
+    except Exception as e:
+        return error_response(str(e), 500, "InternalServerError")

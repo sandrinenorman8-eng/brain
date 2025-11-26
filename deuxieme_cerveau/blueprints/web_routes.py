@@ -1,4 +1,4 @@
-from flask import Blueprint, send_from_directory, jsonify, request, make_response
+from flask import Blueprint, send_from_directory, jsonify, request, make_response, render_template
 import os
 import re
 import glob
@@ -140,6 +140,10 @@ def all_notes_data():
 @web_bp.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory(os.path.join(BASE_DIR, 'static'), filename)
+
+@web_bp.route('/static/node_modules/<path:filename>')
+def serve_node_modules(filename):
+    return send_from_directory(os.path.join(BASE_DIR, 'node_modules'), filename)
 
 # Routes de compatibilité pour le frontend - SUPPRIMÉE car dupliquée dans category_routes.py
 
@@ -759,5 +763,13 @@ def fusion_intelligente():
     """Page de fusion intelligente avec IA"""
     try:
         return send_from_directory(BASE_DIR, 'fusion_intelligente.html')
+    except Exception as e:
+        return f"Error loading page: {e}", 500
+
+@web_bp.route('/knowledge_graph')
+def knowledge_graph():
+    """Page du knowledge graph"""
+    try:
+        return render_template('knowledge_graph.html')
     except Exception as e:
         return f"Error loading page: {e}", 500
